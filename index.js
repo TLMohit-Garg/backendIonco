@@ -23,6 +23,8 @@ app.use(express.json());   //middleware configurations.
 const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://tlwebcodeft:OxN5ziFfVeNrJvTB@cluster0.mlobm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 // const JWT_SECRET = "931079ede9061896e77a0516ba2351c0a6680fa90e117cc3b3e355b7c12c7efc1893159a2ef2e0c4811e785bb69ee262b40c0686ed185eb6d49a293701c99049";
+// created a new setup & upload on git hub
+
 
 //routes
 app.use("/api/products", productRoutes);
