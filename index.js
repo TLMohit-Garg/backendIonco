@@ -8,9 +8,9 @@ import patientSigninRoutes from "./routes/patientSingin.route.js";
 import doctorSigninRoutes from "./routes/doctorSignin.route.js";
 import consultationRoutes from "./routes/consultation.route.js";
 import { authenticateToken } from "./middleware/authMiddleware.js";
-// import dotenv from "dotenv";
+import dotenv from "dotenv";
 
-// dotenv.config();
+dotenv.config();
 console.log('PORT:', process.env.PORT);
 console.log('DB_URI:', process.env.MONGO_URI);
 
@@ -20,10 +20,10 @@ app.use(express.json());   //middleware configurations.
 
 
 // const JWT_SECRET = process.env.JWT_SECRET 
-const port = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://tlwebcodeft:OxN5ziFfVeNrJvTB@cluster0.mlobm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+const port = process.env.PORT;
+const MONGO_URI = process.env.MONGO_URI
+// const MONGO_URI = process.env.MONGO_URI || ""
 // const JWT_SECRET = "931079ede9061896e77a0516ba2351c0a6680fa90e117cc3b3e355b7c12c7efc1893159a2ef2e0c4811e785bb69ee262b40c0686ed185eb6d49a293701c99049";
-// created a new setup & upload on git hub
 
 
 //routes
