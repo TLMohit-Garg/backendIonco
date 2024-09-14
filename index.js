@@ -9,12 +9,16 @@ import doctorSigninRoutes from "./routes/doctorSignin.route.js";
 import consultationRoutes from "./routes/consultation.route.js";
 import { authenticateToken } from "./middleware/authMiddleware.js";
 import dotenv from "dotenv";
+import { v4 as uuidv4 } from 'uuid';
+import Stripe from "stripe";
 
 dotenv.config();
 console.log('PORT:', process.env.PORT);
 console.log('DB_URI:', process.env.MONGO_URI);
+const stripe = new Stripe('sk_test_51PyXQuRpCokjQ3HxyQEk2GFRhF3CeF3afcE9YBl4AIjWS1QoeEPh3B4yKsZ02kMbASNdq9S6pCRzCMRwvYFtQCTD00VuPY3rL1');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());   //middleware configurations. 
 
@@ -40,6 +44,29 @@ app.get("/", function (req, res) {
   res.send("Hello from Node server");
 });
 
+app.post("/payment-booking-consultation",async (req, res) => {
+  const { amount, currency } = req.body;
+  const idempontencyKey = uuidv4()
+
+  try {
+  const paymentIntent = await stripe.consultation.create({
+    amount: amount * 100, // Stripe expects the amount in the smallest currency unit (e.g., cents)
+    currency: currency,    // Example: 'usd'
+  });
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+
+}catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+
+  // }).then(customer => {
+  //   stripe.charges.create({}, {idempontencyKey})
+  // })
+  // .then(result => res.status(200).json(result))
+  // .catch(err => console.log(err))
+});
 // app.post('/api/uploadImages', upload.array('images', 10), (req, res) => {
 //   const images = req.files.map(file => ({
 //     filename: file.filename,
