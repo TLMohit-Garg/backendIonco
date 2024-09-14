@@ -44,12 +44,12 @@ app.get("/", function (req, res) {
   res.send("Hello from Node server");
 });
 
-app.post("/payment-booking-consultation",async (req, res) => {
+app.post("/api/paymentBookingConsultation",async (req, res) => {
   const { amount, currency } = req.body;
   const idempontencyKey = uuidv4()
 
   try {
-  const paymentIntent = await stripe.consultation.create({
+  const paymentIntent = await stripe.paymentIntents.create({
     amount: amount * 100, // Stripe expects the amount in the smallest currency unit (e.g., cents)
     currency: currency,    // Example: 'usd'
   });
@@ -60,12 +60,6 @@ app.post("/payment-booking-consultation",async (req, res) => {
 }catch (error) {
     res.status(500).send({ error: error.message });
   }
-
-  // }).then(customer => {
-  //   stripe.charges.create({}, {idempontencyKey})
-  // })
-  // .then(result => res.status(200).json(result))
-  // .catch(err => console.log(err))
 });
 // app.post('/api/uploadImages', upload.array('images', 10), (req, res) => {
 //   const images = req.files.map(file => ({
