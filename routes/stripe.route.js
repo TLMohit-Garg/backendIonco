@@ -7,6 +7,18 @@ dotenv.config();
 const stripe = Stripe(process.env.STRIPE_KEY)
 const router = express.Router();
 
+const supportedCurrencies = ['usd', 'eur', 'gbp', 'inr', 'aud', 'cad', 'jpy'];
+const minAmountInUSD = 0.50;
+
+const conversionRates = {
+  'usd': 1,
+  'eur': 1.1,
+  'gbp': 1.3,
+  'inr': 0.012,
+  'aud': 0.64, 
+  'cad': 0.75,
+  'jpy': 0.0067
+};
 
 // router.post('/create-checkout-session', async (req, res) => {
 //     const session = await stripe.checkout.sessions.create({
@@ -33,15 +45,24 @@ const router = express.Router();
 
 // Route for creating a Checkout Session
 router.post('/createCheckoutSession', async (req, res) => {
-  const { patientID, doctorPrice } = req.body;
+  const { patientEmail, doctorPrice, preferredCurrency  } = req.body;
+  let currency = 'gbp'; 
+
+  if (preferredCurrency && supportedCurrencies.includes(preferredCurrency.toLowerCase())) {
+    currency = preferredCurrency.toLowerCase();
+  }
+  const amountInUSD = doctorPrice * (conversionRates[currency] || 1);
+  if (amountInUSD < minAmountInUSD) {
+    return res.status(400).send({ error: `The minimum amount required is $${minAmountInUSD}.` });
+  }
 
   try {
     const session = await stripe.checkout.sessions.create({
-      customer_email: patientID,  // Use patientID as the email here for identification
+      customer_email: patientEmail,  // Use patientID as the email here for identification
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency,
             product_data: {
               name: 'Doctor Consultation',
             },
@@ -51,8 +72,8 @@ router.post('/createCheckoutSession', async (req, res) => {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.CLIENT_URL}/checkout-success`,
-      cancel_url: `${process.env.CLIENT_URL}/cart`,
+      success_url: `${process.env.CLIENT_URL}/`,
+      cancel_url: `${process.env.CLIENT_URL}/`,
     });
 
     res.send({ url: session.url });  // Send the Stripe Checkout URL to frontend
