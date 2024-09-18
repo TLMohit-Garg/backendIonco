@@ -51,7 +51,12 @@ router.post('/createCheckoutSession', async (req, res) => {
   if (preferredCurrency && supportedCurrencies.includes(preferredCurrency.toLowerCase())) {
     currency = preferredCurrency.toLowerCase();
   }
-  const amountInUSD = doctorPrice * (conversionRates[currency] || 1);
+
+   // Add 25% to the doctorPrice
+   const increasedPrice = doctorPrice * 1.25;
+
+   // Convert the amount to USD for the minimum price check
+  const amountInUSD = increasedPrice * (conversionRates[currency] || 1);
   if (amountInUSD < minAmountInUSD) {
     return res.status(400).send({ error: `The minimum amount required is $${minAmountInUSD}.` });
   }
