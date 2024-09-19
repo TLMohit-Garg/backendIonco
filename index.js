@@ -39,7 +39,7 @@ app.use("/api/patientSignin",patientSigninRoutes);
 app.use("/api/doctorSignup",doctorSignupRoutes);
 app.use("/api/doctorSignin",doctorSigninRoutes);
 app.use("/api/bookingConsultation",consultationRoutes);
-app.use("/api/doctorBankingDetailRoutes",doctorBankingDetailRoutes);
+app.use("/api/doctorBankingDetail",doctorBankingDetailRoutes);
 app.use("/api/stripe", stripe);
 
 app.use("/uploads", express.static("uploads"));

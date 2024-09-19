@@ -60,7 +60,7 @@ export const bankingDetailRegistration = async (req, res) => {
       if (!bankingDetail) {
         return res.status(404).json({ message: "Banking detail not found" });
       }
-      res.status(200).json({ message: "Banking detail deleted successfully" });
+      res.status(200).json({ message: "Banking detail data is deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
