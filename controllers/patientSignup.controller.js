@@ -52,10 +52,10 @@ export const getPatient = async (req, res) => {
       return res.status(400).json({ message: "Invalid patient ID format" });
     }
 
-    // Find doctor by ID
+    // Find patient by ID
     const patient = await Signup.findById(id);
 
-    // Check if doctor exists
+    // Check if patient exists
     if (!patient) {
       return res.status(404).json({ message: "patient not found" });
     }

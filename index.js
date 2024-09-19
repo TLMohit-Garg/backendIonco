@@ -7,6 +7,7 @@ import doctorSignupRoutes from "./routes/doctorSignup.route.js";
 import patientSigninRoutes from "./routes/patientSingin.route.js";
 import doctorSigninRoutes from "./routes/doctorSignin.route.js";
 import consultationRoutes from "./routes/consultation.route.js";
+import doctorBankingDetailRoutes from "./routes/doctorBankingDetail.route.js";
 import { authenticateToken } from "./middleware/authMiddleware.js";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from 'uuid';
@@ -38,6 +39,7 @@ app.use("/api/patientSignin",patientSigninRoutes);
 app.use("/api/doctorSignup",doctorSignupRoutes);
 app.use("/api/doctorSignin",doctorSigninRoutes);
 app.use("/api/bookingConsultation",consultationRoutes);
+app.use("/api/doctorBankingDetailRoutes",doctorBankingDetailRoutes);
 app.use("/api/stripe", stripe);
 
 app.use("/uploads", express.static("uploads"));
