@@ -16,8 +16,8 @@ const doctorBankingDetail = mongoose.Schema(
       },
       bankAccountNumber: {
         type: String,
-        required: [true, "Please enter your bank account number"],
-        minlength: [8, "Bank account number must be at least 8 characters"],
+        // required: [true, "Please enter your bank account number"],
+        // minlength: [8, "Bank account number must be at least 8 characters"],
       },
       branchCodeIFSC: {
         type: String,
