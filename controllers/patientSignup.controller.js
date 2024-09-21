@@ -2,14 +2,6 @@ import Signup from"../models/signup.model.js";
 import mongoose from 'mongoose';
 
 
-// export  const patientRegistration = async(req, res) => {
-//     try {
-//         const signup = await Signup.create(req.body);
-//         res.status(201).json(signup);
-//     } catch (error) {
-//     res.status(500).json({message: error.message});
-//     }
-// };
 export const patientRegistration = async (req, res) => {
     const { email, ...otherFields } = req.body;
   

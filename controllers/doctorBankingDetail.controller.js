@@ -1,10 +1,17 @@
 import DoctorBankingDetail from "../models/doctorBankingDetail.model.js";
 import mongoose from 'mongoose';
+import { authenticateToken } from "../middleware/authMiddleware.js"
 
 // Controller to create banking detail (bankingDetailRegistration)
 export const bankingDetailRegistration = async (req, res) => {
     try {
-      const bankingDetail = await DoctorBankingDetail.create(req.body);
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const bankingDetail = await DoctorBankingDetail.create({...req.body, userId});
       res.status(200).json(bankingDetail);
     } catch (error) {
       res.status(500).json({ message: error.message });

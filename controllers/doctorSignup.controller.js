@@ -1,16 +1,6 @@
 import DoctorSignup from "../models/doctorsignup.model.js";
 import mongoose from 'mongoose';
 
-
-// export  const doctorRegistration = async(req, res) => {
-//     try {
-//         const signup = await DoctorSignup.create(req.body);
-//         res.status(201).json(signup);
-//     } catch (error) {
-//     res.status(500).json({message: error.message});
-//     }
-// };
-
 export const doctorRegistration = async (req, res) => {
     const { email, ...otherFields } = req.body;
   
@@ -26,14 +16,6 @@ export const doctorRegistration = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
-// export const getdoctors = async(req, res) => {
-//     try{
-//        const doctors = await DoctorSignup.find({});
-//        res.status(200).json(doctors);
-//     }catch(error){
-//     res.status(500).json({message: error.message});
-//     }
-// };
 
 //Get the doctor's data
 export const getDoctors = async (req, res) => {
