@@ -11,7 +11,8 @@ export const bankingDetailRegistration = async (req, res) => {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
-      const bankingDetail = await DoctorBankingDetail.create({...req.body, userId});
+      const bankingDetail = await DoctorBankingDetail.create({...req.body,  // Form data from the frontend
+         userId});                                                          // Extracted from the JWT token
       res.status(200).json(bankingDetail);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -29,7 +30,22 @@ export const bankingDetailRegistration = async (req, res) => {
   };
   
   // Controller to get a specific banking detail (getbankingDetail)
-  export const getbankingDetail = async (req, res) => {
+  export const getBankingDetailByUserId = async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const bankingDetail = await DoctorBankingDetail.findOne({ userId: userId });
+      // console.log("Fetching banking detail for user ID:", userId);
+  
+      if (!bankingDetail) {
+        return res.status(404).json({ message: "Banking detail not found" });
+      }
+      res.status(200).json(bankingDetail);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+   // Controller to get a specific banking detail (getbankingDetail)
+   export const getbankingDetail = async (req, res) => {
     try {
       const { id } = req.params;
       const bankingDetail = await DoctorBankingDetail.findById(id);
