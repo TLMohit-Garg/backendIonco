@@ -8,6 +8,7 @@ import patientSigninRoutes from "./routes/patientSingin.route.js";
 import doctorSigninRoutes from "./routes/doctorSignin.route.js";
 import consultationRoutes from "./routes/consultation.route.js";
 import doctorBankingDetailRoutes from "./routes/doctorBankingDetail.route.js";
+import adminSigninRouter from "./routes/adminSignin.route.js";
 import { authenticateToken } from "./middleware/authMiddleware.js";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from 'uuid';
@@ -33,6 +34,7 @@ const MONGO_URI = process.env.MONGO_URI
 
 
 //routes
+app.use("/api/admin-Signin", adminSigninRouter);
 app.use("/api/products", productRoutes);
 app.use("/api/patientSignup", patientSignupRoutes);
 app.use("/api/patientSignin",patientSigninRoutes);
