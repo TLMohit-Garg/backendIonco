@@ -9,6 +9,7 @@ import doctorSigninRoutes from "./routes/doctorSignin.route.js";
 import consultationRoutes from "./routes/consultation.route.js";
 import doctorBankingDetailRoutes from "./routes/doctorBankingDetail.route.js";
 import adminSigninRouter from "./routes/adminSignin.route.js";
+import userRoutes from "./routes/user.route.js";
 import { authenticateToken } from "./middleware/authMiddleware.js";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from 'uuid';
@@ -43,6 +44,7 @@ app.use("/api/doctorSignin",doctorSigninRoutes);
 app.use("/api/bookingConsultation",consultationRoutes);
 app.use("/api/doctorBankingDetail",doctorBankingDetailRoutes);
 app.use("/api/stripe", stripe);
+app.use('/api/users', userRoutes);
 
 app.use("/uploads", express.static("uploads"));
 
