@@ -1,5 +1,5 @@
 import express from "express";
-import {bookConsultation} from "../controllers/consultation.controller.js";
+import {bookConsultation, getConsultation, getconsultationId} from "../controllers/consultation.controller.js";
 import multer from "multer";
 
 const router = express.Router();
@@ -20,6 +20,8 @@ const storage = multer.diskStorage({
   const upload = multer({ storage: storage })
 
 router.post("/", upload.array("images", 10), bookConsultation);
+router.get("/", getConsultation);
+router.get("/:id",getconsultationId);
 
 // router.post("/", bookConsultation);
 

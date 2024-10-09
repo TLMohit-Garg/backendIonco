@@ -25,7 +25,7 @@ const ConsultationSchema = mongoose.Schema(
     },
     cancertype: {
       type: String,
-      required: [true, "Please select cancer type"],
+      required: [false, "Please select cancer type"],
     },
     phone: {
       type: String,
@@ -39,11 +39,11 @@ const ConsultationSchema = mongoose.Schema(
         {
           filename: {
             type: String,
-            required: true,
+            required: false,
           },
           url: {
             type: String,
-            required: true,
+            required: false,
           },
         }
       ],
