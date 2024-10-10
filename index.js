@@ -82,7 +82,7 @@ app.get("/", function (req, res) {
 
 // Protected route example
 app.get('/api/protectedRoute', authenticateToken, (req, res) => {
-  res.status(200).json({ message: 'You have access to this protected route!', userId: req.userId });
+  res.status(200).json({ message: 'You have access to this protected route!', userId: req.user.userId });
 });
 
 mongoose.connect(MONGO_URI)
