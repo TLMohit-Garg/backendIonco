@@ -11,7 +11,7 @@ router.post('/login', loginUser);       // User login
 // Protected routes (authentication required)
 router.get('/profile', authenticateToken, getUserProfile);       // Get user profile (protected)
 router.get('/role/:role', authenticateToken, getUsersByRole);    // Get users by role (protected)
-router.get('/:id', getUserById);              // Get user by ID (protected)
+router.get('/:id',authenticateToken, getUserById);              // Get user by ID (protected)
 router.put('/:id', authenticateToken, updateUser);               // Update user (protected)
 router.delete('/:id', authenticateToken, deleteUser);            // Delete user (protected)
 
