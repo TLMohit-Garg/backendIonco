@@ -70,6 +70,7 @@ router.post('/createCheckoutSession', async (req, res) => {
             currency,
             product_data: {
               name: 'Doctor Consultation',
+              description: 'Consultation fee includes service charges and applicable taxes.',
             },
             unit_amount: doctorPrice * 100,  // Price from doctor's flash card in cents
           },
