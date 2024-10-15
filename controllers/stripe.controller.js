@@ -10,15 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_KEY);
 // POST request to create a Stripe Checkout Session
 export const createCheckoutSession = async (req, res) => {
   try {
-    // Validate request body using Yup schema
-    await DoctorConsultation.validate(req.body, { abortEarly: false });
-
-    const { patientEmail, doctorPrice, preferredCurrency, doctorName, consultationDate, serviceCharges } = req.body;
-
-    // Add 30% to the doctorPrice
-    // const increasedPrice = doctorPrice * 1.25;
-    const serviceCharge = doctorPrice * 0.30; // 30% service charge
-    const totalPrice = doctorPrice + serviceCharge; // Total price with service charges
+    const { patientEmail, doctorPrice, preferredCurrency, doctorName, serviceCharges } = req.body;
 
     // Convert the price to cents and create a checkout session
     const session = await stripe.checkout.sessions.create({
@@ -29,50 +21,36 @@ export const createCheckoutSession = async (req, res) => {
             currency: preferredCurrency.toLowerCase(),
             product_data: {
               name: `Consultation with Dr. ${doctorName}`,
-              description: `Consultation on ${consultationDate}. Service charges included.`,
+              description: `Service charges included.`,
             },
-            unit_amount: Math.round(totalPrice * 100), // Stripe requires price in cents
+            unit_amount: Math.round(doctorPrice * 100), // Stripe requires price in cents
           },
           quantity: 1,
         },
-        {
-            price_data: {
-              currency: preferredCurrency.toLowerCase(),
-              product_data: {
-                name: 'Service Charge',
-                description: '30% Service Charge',
-              },
-              unit_amount: Math.round(serviceCharge * 100), // Price in cents
-            },
-            quantity: 1,
-          },
+        // {
+        //     price_data: {
+        //       currency: preferredCurrency.toLowerCase(),
+        //       product_data: {
+        //         name: 'Service Charge',
+        //         description: '30% Service Charge',
+        //       },
+        //       unit_amount: Math.round(serviceCharge * 100), // Price in cents
+        //     },
+        //     quantity: 1,
+        //   },
       ],
       mode: 'payment',
       success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/cancel`,
     });
 
-     // Create a new DoctorConsultation entry in MongoDB
-     const newConsultation = new DoctorConsultation({
-        patientEmail,
-        doctorName,
-        consultationDate,
-        serviceCharges,
-        // doctorPrice: increasedPrice, // Store the increased price
-        // sessionId: session.id, // Optional: Store the session ID for reference
-      });
-  
-      // Save the consultation to the database
-      await newConsultation.save();
-
     // Send the session URL back to the client
     res.status(200).send({ url: session.url, sessionId: session.id });
   } catch (error) {
-    // Handle validation or Stripe errors
-    
     res.status(500).send({ error: error.message });
   }
 };
+
 
 // GET request to retrieve a Stripe Checkout Session
 export const getCheckoutSession = async (req, res) => {
