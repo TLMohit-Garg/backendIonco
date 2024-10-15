@@ -24,7 +24,7 @@ export const patientSignin = async(req, res) => {
         }
     
          // Create a JWT token
-         const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1d' });
+         const token = jwt.sign({ userId: user._id, email: user.email  }, JWT_SECRET, { expiresIn: '1d' });
     
         // If successful, send a success response
         res.status(200).json({ message: 'Sign-in successful', token  });
