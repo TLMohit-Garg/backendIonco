@@ -10,6 +10,8 @@ import consultationRoutes from "./routes/consultation.route.js";
 import doctorBankingDetailRoutes from "./routes/doctorBankingDetail.route.js";
 import adminSigninRouter from "./routes/adminSignin.route.js";
 import userRoutes from "./routes/user.route.js";
+import videoCallDetailRoutes from "./routes/videocallDetail.route.js";
+import { generateVideoCallLink } from './controllers/videoCalldetails.controller.js';
 import { authenticateToken } from "./middleware/authMiddleware.js";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from 'uuid';
@@ -45,12 +47,14 @@ app.use("/api/bookingConsultation",consultationRoutes);
 app.use("/api/doctorBankingDetail",doctorBankingDetailRoutes);
 app.use("/api/stripe", stripe);
 app.use('/api/users', userRoutes);
+app.use('/api/videoCallDetail', videoCallDetailRoutes);
 
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", function (req, res) {
   res.send("Hello from Node server");
 });
+videoCallDetailRoutes.post('/generateVideoCallLink', generateVideoCallLink);
 
 // app.post("/api/paymentBookingConsultation",async (req, res) => {
 //   const { amount, currency } = req.body;
