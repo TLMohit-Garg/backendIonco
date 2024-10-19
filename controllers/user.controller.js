@@ -66,8 +66,6 @@ export const registerUser = async (req, res) => {
 // User Login
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
-  // Log the incoming request
-  console.log('Incoming request:', { email, password });
 
   try {
     // Find user by email
@@ -80,21 +78,22 @@ export const loginUser = async (req, res) => {
     console.log('Fetched user:', { email: user.email, role: user.role });
     
     // Validate password
-    // const isMatch = await bcrypt.compare(password, user.password);
-    // console.log('Password match:', isMatch); // Log whether the passwords match
-    // if (!isMatch) {
-    //   return res.status(400).json({ message: "Invalid credentials" });
-    // }
-
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch); // Log whether the passwords match
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    
     // Generate JWT token
     const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-console.log('Login successful, token generated'); 
+    console.log('Login successful, token generated'); 
 
     res.status(200).json({ message: "Login successful", token, role: user.role,user: {
       userId: user._id, 
       email: user.email,
       role: user.role,
-      phone:user.phone
+      phone:user.phone,
+      password:user.password,
     }, });
   } catch (error) {
     res.status(500).json({ message: "Login failed", error: error.message });
@@ -138,66 +137,66 @@ export const getUserById = async (req, res) => {
 
 // Fetch User Profile
 // Get user profile (Role-based access control)
-export const getUserProfile = async (req, res) => {
-    try {
-      // The token verification and user extraction are handled by the authenticateToken middleware
-      const user = await User.findById(req.user.userId);
-  
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      // Role-based access control: restrict fields based on user role
-      if (user.role === 'doctor') {
-        res.status(200).json({
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          doctorProfile: user.doctorProfile,
-        });
-      } else if (user.role === 'patient') {
-        res.status(200).json({
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          patientProfile: user.patientProfile,
-        });
-      } else {
-        res.status(200).json({
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-        });
-      }
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
-  
 // export const getUserProfile = async (req, res) => {
-//   try {
-//     // Get the token from the request headers
-//     const token = req.header('Authorization').replace('Bearer ', '');
-
-//     if (!token) {
-//       return res.status(401).json({ message: 'Access denied. No token provided.' });
+//     try {
+//       // The token verification and user extraction are handled by the authenticateToken middleware
+//       const user = await User.findById(req.user.userId);
+  
+//       if (!user) {
+//         return res.status(404).json({ message: 'User not found' });
+//       }
+  
+//       // Role-based access control: restrict fields based on user role
+//       if (user.role === 'doctor') {
+//         res.status(200).json({
+//           firstName: user.firstName,
+//           lastName: user.lastName,
+//           email: user.email,
+//           doctorProfile: user.doctorProfile,
+//         });
+//       } else if (user.role === 'patient') {
+//         res.status(200).json({
+//           firstName: user.firstName,
+//           lastName: user.lastName,
+//           email: user.email,
+//           patientProfile: user.patientProfile,
+//         });
+//       } else {
+//         res.status(200).json({
+//           firstName: user.firstName,
+//           lastName: user.lastName,
+//           email: user.email,
+//         });
+//       }
+//     } catch (error) {
+//       res.status(500).json({ message: error.message });
 //     }
+//   };
+  
+export const getUserProfile = async (req, res) => {
+  try {
+    // Get the token from the request headers
+    const token = req.header('Authorization').replace('Bearer ', '');
 
-//     // Verify token and extract user info
-//     const decoded = jwt.verify(token, JWT_SECRET);
+    if (!token) {
+      return res.status(401).json({ message: 'Access denied. No token provided.' });
+    }
+
+    // Verify token and extract user info
+    const decoded = jwt.verify(token, JWT_SECRET);
     
-//     // Fetch user profile from database using the user ID from the token
-//     const user = await User.findById(decoded.userId);
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
+    // Fetch user profile from database using the user ID from the token
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-//     // Send the user profile data as a response
-//     res.status(200).json({ user });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
+    // Send the user profile data as a response
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Update user profile (Patient, Doctor)
 export const updateUser = async (req, res) => {
