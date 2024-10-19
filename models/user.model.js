@@ -57,12 +57,12 @@ const userSchema = new mongoose.Schema(
         required: false
       },
       experience: {
-        type: Number,
+        type: String,
         required: false
       },
       profileImage: {
         type: String, // You can store the image URL here (from Cloudinary, AWS S3, etc.)
-        required: false, // Optional depending on whether it's mandatory for the doctor
+        required: false, 
       },
     },
     
@@ -86,19 +86,6 @@ const userSchema = new mongoose.Schema(
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps
   }
 );
-
-// Middleware to hash the password before saving the document
-userSchema.pre('save', async function (next) {
-  // Only hash the password if it has been modified (or is new)
-  if (!this.isModified('password')) return next();
-
-  // Generate a salt and hash the password
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-
-  next();
-});
-
 // Model creation
 const User = mongoose.model('User', userSchema);
 export default User;
