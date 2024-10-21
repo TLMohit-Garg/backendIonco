@@ -13,6 +13,6 @@ router.get('/:id', getConsultationById);
 router.post('/saveConsultationNotes', saveConsultationNotes);
 
 // Route for update consultation notes
-router.put('/:consultationId',updateNotes);
+router.put('/:consultationId',updateNotes); 
 
 export default router;
