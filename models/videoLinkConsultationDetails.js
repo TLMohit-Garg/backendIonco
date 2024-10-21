@@ -4,7 +4,7 @@ const VideocallConsultationSchema = new mongoose.Schema({
   patientId: { type: String, required: [true, "Please enter patientId"] },
   doctorId: { type: String, required: [true, "Please enter doctorId"] },
   consultationTime: {
-    type: Date,
+    type: String,
     required: [true, "Please enter consultationTime"],
   },
   videoCallLink: { type: String },

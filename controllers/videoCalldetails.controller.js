@@ -22,7 +22,7 @@ export const generateVideoCallLink = async (req, res) => {
 
     await newConsultation.save();
 
-    return res.json({ link: videoCallLink });
+    return res.json({message: 'Link generated successfully', link: videoCallLink, consultationId: newConsultation._id, });
   } catch (error) {
     console.error("Error generating video call link:", error);
     return res.status(500).json({ error: "Internal server error" });
