@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
 const VideocallConsultationSchema = new mongoose.Schema({
-  patientId: { type: String, required: [true, "Please enter patientId"] },
-  doctorId: { type: String, required: [true, "Please enter doctorId"] },
+  patientId: { type: mongoose.Schema.Types.ObjectId, ref:"signup"},
+  doctorId: { type: mongoose.Schema.Types.ObjectId, ref:"doctorsignup"},
   consultationTime: {
     type: String,
     required: [true, "Please enter consultationTime"],

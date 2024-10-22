@@ -1,4 +1,6 @@
 import VideocallConsultation from "../models/videoLinkConsultationDetails.js";
+import DoctorSignup from "../models/doctorsignup.model.js";
+import Signup from "../models/signup.model.js";
 
 // Controller function to generate video call link
 export const generateVideoCallLink = async (req, res) => {
@@ -30,19 +32,19 @@ export const generateVideoCallLink = async (req, res) => {
 };
 
 // Controller function to get consultation by ID
-export const getConsultationById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const consultation = await VideocallConsultation.findById(id);
-    if (!consultation) {
-      return res.status(404).json({ error: "Consultation not found" });
-    }
-    return res.json(consultation);
-  } catch (error) {
-    console.error("Error fetching consultation:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
+// export const getConsultationById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const consultation = await VideocallConsultation.findById(id);
+//     if (!consultation) {
+//       return res.status(404).json({ error: "Consultation not found" });
+//     }
+//     return res.json(consultation);
+//   } catch (error) {
+//     console.error("Error fetching consultation:", error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// };
 
 // Controller function for save consultation notes
 export const saveConsultationNotes = async (req, res) => {
@@ -116,6 +118,36 @@ export const updateNotes = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Failed to update consultation notes." });
+  }
+};
+
+export const getConsultationsByUser = async (req, res) => {
+  const { userId } = req.params; // Get the userId from the request params
+  try {
+    // Check if userId corresponds to a doctor
+    const doctor = await DoctorSignup.findById(userId);
+    // console.log(doctor,"doctor id to test")
+    if (doctor) {
+      const consultations = await VideocallConsultation.find({ doctorId: userId });
+      console.log("doctor consultations",consultations);
+      return res.json(consultations);
+    }
+
+    // Check if userId corresponds to a patient
+    const patient = await Signup.findById(userId);
+    // console.log(patient,"patient id to test")
+
+    if (patient) {
+      const consultations = await VideocallConsultation.find({ patientId: userId });
+      console.log("patient consultations",consultations);
+      return res.json(consultations);
+    }
+
+    // If neither, return an error
+    return res.status(404).json({ error: "User not found" });
+  } catch (error) {
+    console.error("Error fetching consultations:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
  
