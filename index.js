@@ -33,11 +33,10 @@ app.use(
 app.use(express.json()); //middleware configurations.
 
 // const JWT_SECRET = process.env.JWT_SECRET
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 console.log("PORT:", process.env.PORT);
 const MONGO_URI = process.env.MONGO_URI;
 console.log("MONGO_URI:", process.env.MONGO_URI);
-// const MONGO_URI = process.env.MONGO_URI || ""
 // const JWT_SECRET = "931079ede9061896e77a0516ba2351c0a6680fa90e117cc3b3e355b7c12c7efc1893159a2ef2e0c4811e785bb69ee262b40c0686ed185eb6d49a293701c99049";
 
 //routes
@@ -96,7 +95,7 @@ app.get("/api/protectedRoute", authenticateToken, (req, res) => {
 });
 
 mongoose
-  .connect(MONGO_URI)
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("Connected! to the database");
     app.listen(port, () => {
