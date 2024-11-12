@@ -94,15 +94,33 @@ app.get("/api/protectedRoute", authenticateToken, (req, res) => {
   });
 });
 
+// mongoose
+//   .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+//   .then(() => {
+//     console.log("Connected! to the database");
+//     app.listen(port, () => {
+//       console.log(`Server is running on http://localhost:${port}`);
+//     });
+//   })
+
+//   .catch(() => {
+//     console.log("Connection Failed!");
+//   });
 mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(MONGO_URI)
   .then(() => {
-    console.log("Connected! to the database");
+    console.log("Connected to the database successfully!");
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
     });
   })
-
-  .catch(() => {
-    console.log("Connection Failed!");
+  .catch((error) => {
+    console.error("Database connection failed:", error.message);
   });
+
+app.use(
+  cors({
+    origin: "https://teleconsultation.ioncosolutions.com",
+  })
+);
+
