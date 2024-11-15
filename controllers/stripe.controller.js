@@ -2,8 +2,6 @@ import DoctorConsultation  from '../models/stripe.model.js';
 import dotenv from 'dotenv';
 import Stripe from 'stripe';
 
-const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
@@ -50,7 +48,6 @@ export const createCheckoutSession = async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 };
-
 
 // GET request to retrieve a Stripe Checkout Session
 export const getCheckoutSession = async (req, res) => {
