@@ -46,10 +46,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/patientSignup", patientSignupRoutes);
 app.use("/api/patientSignin", patientSigninRoutes);
 app.use("/api/doctorSignup", doctorSignupRoutes);
-<<<<<<< HEAD
 app.use("/api/doctorProfile", doctorProfileRoutes);
-=======
->>>>>>> bfc5ca01197bc846c5b636c061248612664c8921
 app.use("/api/doctorSignin", doctorSigninRoutes);
 app.use("/api/bookingConsultation", consultationRoutes);
 app.use("/api/doctorBankingDetail", doctorBankingDetailRoutes);
