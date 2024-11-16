@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import Stripe from 'stripe';
 
 dotenv.config();
-const stripe = new Stripe(process.env.STRIPE_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // POST request to create a Stripe Checkout Session
 export const createCheckoutSession = async (req, res) => {
@@ -25,17 +25,7 @@ export const createCheckoutSession = async (req, res) => {
           },
           quantity: 1,
         },
-        // {
-        //     price_data: {
-        //       currency: preferredCurrency.toLowerCase(),
-        //       product_data: {
-        //         name: 'Service Charge',
-        //         description: '30% Service Charge',
-        //       },
-        //       unit_amount: Math.round(serviceCharge * 100), // Price in cents
-        //     },
-        //     quantity: 1,
-        //   },
+        
       ],
       mode: 'payment',
       success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
