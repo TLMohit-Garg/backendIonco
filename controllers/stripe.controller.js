@@ -2,8 +2,15 @@ import DoctorConsultation  from '../models/stripe.model.js';
 import dotenv from 'dotenv';
 import Stripe from 'stripe';
 
+<<<<<<< HEAD
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+=======
+const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+dotenv.config();
+const stripe = new Stripe(process.env.STRIPE_KEY);
+>>>>>>> bfc5ca01197bc846c5b636c061248612664c8921
 
 // POST request to create a Stripe Checkout Session
 export const createCheckoutSession = async (req, res) => {
@@ -25,7 +32,21 @@ export const createCheckoutSession = async (req, res) => {
           },
           quantity: 1,
         },
+<<<<<<< HEAD
         
+=======
+        // {
+        //     price_data: {
+        //       currency: preferredCurrency.toLowerCase(),
+        //       product_data: {
+        //         name: 'Service Charge',
+        //         description: '30% Service Charge',
+        //       },
+        //       unit_amount: Math.round(serviceCharge * 100), // Price in cents
+        //     },
+        //     quantity: 1,
+        //   },
+>>>>>>> bfc5ca01197bc846c5b636c061248612664c8921
       ],
       mode: 'payment',
       success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -39,6 +60,10 @@ export const createCheckoutSession = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> bfc5ca01197bc846c5b636c061248612664c8921
 // GET request to retrieve a Stripe Checkout Session
 export const getCheckoutSession = async (req, res) => {
   const { sessionId } = req.params;
