@@ -5,7 +5,12 @@ import upload from "../middleware/upload.js";
 const router = express.Router();
 
 // Route to create doctor profile
-router.post('/create-profile', upload.single('image'), createDoctorProfile);
+router.post('/createProfile', upload.single('image'), 
+(req, res, next) => {
+    console.log('Body:', req.body);
+    console.log('File:', req.file);  // To check if the file is being uploaded correctly
+    next();  // Proceed to the next middleware/controller
+  },createDoctorProfile);
 
 export default router;
 

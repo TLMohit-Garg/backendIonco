@@ -18,6 +18,12 @@ import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import { Stripe } from "stripe";
 import stripe from "./routes/stripe.route.js";
+import imageRouter from './routes/image.route.js';
+
+//new code has to remove 
+import multer from "multer";
+// const multer  = require('multer')
+const upload = multer({ dest: 'uploadingfile/' })
 
 dotenv.config();
 console.log("PORT:", process.env.PORT);
@@ -26,12 +32,35 @@ console.log("DB_URI:", process.env.MONGO_URI);
 
 const app = express();
 
+// const fileStorageEngine = multer.diskStorage({
+//   destination:(req, file, cb) => {
+// cb(null, './image')
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + '-' + file.originalname);
+//   }
+// })
+// const upload = multer({
+//   storage: fileStorageEngine,
+//   limits: {
+//     fileSize: 1024 * 1024 * 5 // Allow files up to 5MB
+//   }
+// });
+
 app.use(
   cors({
     origin: "https://teleconsultation.ioncosolutions.com",
   })
 );
 app.use(express.json()); //middleware configurations.
+// app.post("/single",upload.single("image"), (req,res) => {
+//   console.log(req,file);
+//   if (!req.file) {
+//     return res.status(400).send('No file uploaded');
+//   }
+//   res.send("fileuploaded successfully")
+// })
+
 
 // const JWT_SECRET = process.env.JWT_SECRET
 const port = process.env.PORT || 3000;
@@ -53,6 +82,7 @@ app.use("/api/doctorBankingDetail", doctorBankingDetailRoutes);
 app.use("/api/stripe", stripe);
 app.use("/api/users", userRoutes);
 app.use("/api/videoCallDetail", videoCallDetailRoutes);
+app.use('/api/images', imageRouter);
 
 app.use("/uploads", express.static("uploads"));
 
@@ -95,6 +125,9 @@ app.get("/api/protectedRoute", authenticateToken, (req, res) => {
     userId: req.user.userId,
   });
 });
+app.post("/api/upload", upload.single('file'),(req, res) => {
+  res.send("upload successfully");
+})
 
 // mongoose
 //   .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })

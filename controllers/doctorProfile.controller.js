@@ -1,10 +1,11 @@
 import DoctorProfile from "../models/doctorProfile.model.js"
-// const cloudinary = require('../config/cloudinary'); // Cloudinary configuration
 import cloudinary from "../config/cloudinary.js";
+
 
 // Controller to handle doctor profile creation with image upload
 export const createDoctorProfile = async (req, res) => {
   const { title, speciality, description, exploredescription, charges, country, qualification, workExperience } = req.body;
+  console.log("req.file is :-",req.file);
 
   // Ensure the image file is uploaded
   if (!req.file) {
@@ -16,7 +17,7 @@ export const createDoctorProfile = async (req, res) => {
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: 'doctor_profiles', // Specify the folder for images
     });
-
+    console.log("result of path", result);
     // Create a new doctor profile in the database
     const newDoctor = new DoctorProfile({
       title,

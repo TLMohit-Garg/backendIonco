@@ -1,6 +1,5 @@
 import multer from "multer";
 
-// Set up Multer to store images temporarily
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/'); // Save files to the "uploads" directory
@@ -14,16 +13,19 @@ const upload = multer({ storage: storage,
   fileFilter: function(req, file, callback){
     if(
       file.mimetype == "image/png" ||
-      file.mimetype == "image/jpg"
+      file.mimetype == "image/jpg" ||
+      file.mimetype === 'image/jpeg' || 
+      file.mimetype === 'application/pdf'
     ){
       callback(null, true);
     }else{
-      callback(null, false);
+      callback(new Error('Invalid file type'), false);
     }
   },
-  // limits:{
-  //   filesize: 1024 * 1024 * 2
-  // }
+  limits:{
+    filesize: 1024 * 1024 * 2
+  }
  });
 
+ 
 export default upload;
