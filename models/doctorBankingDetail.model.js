@@ -4,7 +4,7 @@ const doctorBankingDetail = mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "DoctorSignup", // Assuming you have a User model
+      ref: "doctorsignup", // Assuming you have a User model
       required: true,
     },
     accountName: {

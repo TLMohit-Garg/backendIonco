@@ -1,17 +1,37 @@
 import mongoose from "mongoose";
 
-const doctorSchema = new mongoose.Schema({
-  title: { type: String, required: false },
-  speciality: { type: String, required: false },
-  description: { type: String, required: false },
-  exploredescription: { type: String, required: false },
-  charges: { type: Number, required: false },
-  country: { type: String, required: false },
-  qualification: { type: String, required: false },
-  workExperience: { type: String, required: false },
-  imageUrl: { type: String, required: false }, // URL of the uploaded image in Cloudinary 
-}, { timestamps: true });
+const doctorSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "doctorsignup",
+      required: true,
+    }, // Reference to DoctorSignup
+    title: { type: String, required: [true, "Please enter your Name"] },
+    speciality: {
+      type: String,
+      required: [true, "Please enter your speciality"],
+    },
+    description: {
+      type: String,
+      required: [true, "Please enter your description"],
+    },
+    exploredescription: { type: String },
+    charges: { type: String, required: [true, "Please define your charges"] },
+    country: { type: String, required: [true, "Please select your country"] },
+    qualification: {
+      type: String,
+      required: [true, "Please enter your qualification"],
+    },
+    workExperience: {
+      type: String,
+      required: [true, "Please mention your workExperience"],
+    },
+    imageUrl: { type: String, required: [true, "Please upload your image"] }, // URL of the uploaded image in Cloudinary
+  },
+  { timestamps: true }
+);
 
-const DoctorProfile = mongoose.model('Doctor', doctorSchema);
+const DoctorProfile = mongoose.model("Doctor", doctorSchema);
 
 export default DoctorProfile;
