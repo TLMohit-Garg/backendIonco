@@ -45,9 +45,38 @@ export const getCheckoutSession = async (req, res) => {
   
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if(session.payment_status === "paid"){
+      sendPaymentSuccessEmail(session.customer_email, session.amount_total / 100, session.currency, session.id);
+    }
     res.status(200).send(session);
   } catch (error) {
     res.status(500).send({ error: error.message });
+  }
+};
+
+// Function to send payment success email
+const sendPaymentSuccessEmail = async (email, amount, currency, sessionId) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER, // Your email
+        pass: process.env.EMAIL_PASS, // App-specific password
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Payment Successful - Consultation Booking',
+      text: `Dear User,\n\nThank you for your payment of ${amount} ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.\n\nWe look forward to serving you.\n\nBest Regards,\nYour Healthcare Team`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Payment success email sent.');
+  } catch (error) {
+    console.error('Failed to send payment success email:', error.message);
   }
 };
 

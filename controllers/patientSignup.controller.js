@@ -1,10 +1,14 @@
 import Signup from"../models/signup.model.js";
 import mongoose from 'mongoose';
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
+dotenv.config();
+console.log("process.env.EMAIL_USER:-- ",process.env.EMAIL_USER)
+console.log("process.env.EMAIL_PASS:-- ",process.env.EMAIL_PASS)
 
 export const patientRegistration = async (req, res) => {
-    const { email, ...otherFields } = req.body;
-  
+    const { email, firstName, ...otherFields } = req.body;
     try {
       // Check if the email already exists
       const existingUser = await Signup.findOne({ email });
@@ -13,7 +17,42 @@ export const patientRegistration = async (req, res) => {
       }
   
       // If email is unique, create a new user
-      const newUser = await Signup.create({ email, ...otherFields });
+      const newUser = await Signup.create({ email, firstName, ...otherFields });
+
+      // Set up Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER ,
+        pass: process.env.EMAIL_PASS ,
+      },
+    });
+
+    // Email to the new patient
+    const patientMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Welcome to Our Platform",
+      text: `Hi ${firstName},\n\nThank you for registering with us. We are thrilled to have you onboard!\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
+    };
+
+    // Email to the admin
+    const adminMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: "ioncosolutions@gmail.com", // Replace with your admin email
+      subject: "New Patient Registration",
+      text: `Hi Admin,\n\nA new patient has registered on the platform.
+      \n\nDetails:\nName: ${firstName}\nEmail: ${email}\nOther Details: ${JSON.stringify(
+        otherFields,
+        null,
+        2
+      )}\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
+    };
+
+    // Send the emails
+    await transporter.sendMail(patientMailOptions);
+    await transporter.sendMail(adminMailOptions);
+
       res.status(201).json({ message: 'Signup successful', user: newUser });
     } catch (error) {
       res.status(500).json({ message: error.message });
