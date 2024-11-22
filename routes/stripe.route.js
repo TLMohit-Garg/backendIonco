@@ -1,5 +1,5 @@
 import express from 'express';
-import { createCheckoutSession, getCheckoutSession, gettransactionList } from '../controllers/stripe.controller.js';
+import { createCheckoutSession, getCheckoutSession, gettransactionList, handleStripeWebhook } from '../controllers/stripe.controller.js';
 
 const router = express.Router();
 
@@ -11,6 +11,8 @@ router.get('/session/:sessionId', getCheckoutSession);
 
 //Route for fetch all the transaction details
 router.get("/transactions", gettransactionList);
+
+router.post("/webhook", express.raw({ type: 'application/json' }), handleStripeWebhook);
 
 export default router;
 

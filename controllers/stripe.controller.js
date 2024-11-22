@@ -1,6 +1,7 @@
 import DoctorConsultation  from '../models/stripe.model.js';
 import dotenv from 'dotenv';
 import Stripe from 'stripe';
+const endpointSecret = 'your-webhook-signing-secret';
 
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_KEY);
@@ -70,7 +71,12 @@ const sendPaymentSuccessEmail = async (email, amount, currency, sessionId) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'Payment Successful - Consultation Booking',
-      text: `Dear User,\n\nThank you for your payment of ${amount} ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.\n\nWe look forward to serving you.\n\nBest Regards,\nYour Healthcare Team`,
+      // text: `Dear User,\n\nThank you for your payment of ${amount}
+      //  ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.
+      //  \n\nWe look forward to serving you.\n\nBest Regards,\nYour Healthcare Team`,
+      text: `Dear ${
+        email === process.env.ADMIN_EMAIL ? 'Admin' : 'User'
+      },\n\nThank you for your payment of ${amount} ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.\n\nBest Regards,\nYour Healthcare Team`,
     };
 
     await transporter.sendMail(mailOptions);
@@ -88,6 +94,66 @@ export const gettransactionList = async(req, res) => {
         res.status(500).send({error: error.message});
     }
 }
+
+export const handleStripeWebhook =async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+
+  let event;
+
+  try {
+      // Verify the Stripe webhook signature
+      event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+  } catch (err) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  switch (event.type) {
+      case 'checkout.session.completed':
+          const session = event.data.object;
+          console.log('Payment was successful:', session);
+          // Trigger your success logic here
+          // Example: Update your database or send a confirmation email
+
+           // Send email to the user
+      await sendPaymentSuccessEmail(
+        session.customer_email, 
+        session.amount_total / 100, 
+        session.currency, 
+        session.id
+      );
+
+      // Send email to the admin
+      await sendPaymentSuccessEmail(
+        process.env.ADMIN_EMAIL, // Admin email
+        session.amount_total / 100,
+        session.currency,
+        session.id
+      );
+
+          break;
+
+      case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          console.log('Payment Intent was successful:', paymentIntent);
+          // Handle payment confirmation logic here
+          break;
+
+      default:
+          console.warn(`Unhandled event type: ${event.type}`);
+  }
+
+  // Respond to Stripe
+  res.status(200).json({ received: true });
+};
+
+
+
+
+
+
+
 
 
 // import Stripe from "stripe";

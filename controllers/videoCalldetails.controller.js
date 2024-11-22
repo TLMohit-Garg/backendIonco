@@ -1,31 +1,55 @@
 import VideocallConsultation from "../models/videoLinkConsultationDetails.js";
 import DoctorSignup from "../models/doctorsignup.model.js";
 import Signup from "../models/signup.model.js";
+import mongoose from "mongoose";
+import nodemailer from "nodemailer";
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Controller function to generate video call link
 export const generateVideoCallLink = async (req, res) => {
-  const { patientId, doctorId, consultationTime } = req.body;
+  const { patientId, doctorId, consultationTime, patientEmail, doctorEmail } = req.body;
 
-  if (!patientId || !doctorId || !consultationTime) {
+  // Validate IDs
+  if (!isValidObjectId(patientId) || !isValidObjectId(doctorId)) {
+    return res.status(400).json({ error: "Invalid patientId or doctorId" });
+  }
+
+  if (!patientId || !doctorId || !consultationTime || !patientEmail || !doctorEmail) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
   try {
+
+     // Convert string IDs to ObjectId
+     const patientObjectId = new mongoose.Types.ObjectId(patientId);
+     const doctorObjectId = new mongoose.Types.ObjectId(doctorId);
+
     const roomName = `consultation-${doctorId}-${patientId}-${Date.now()}`;
     const videoCallLink = `https://meet.jit.si/${roomName}`;
 
     // Save consultation details to the database
     const newConsultation = new VideocallConsultation({
-      patientId,
-      doctorId,
+      patientId: patientObjectId,
+      doctorId: doctorObjectId,
       consultationTime,
       videoCallLink,
     });
 
     await newConsultation.save();
+    const emailContent = `
+    <h3>Video Consultation Scheduled</h3>
+    <p>Your consultation is scheduled at: ${new Date(consultationTime).toLocaleString()}</p>
+    <p>Click <a href="${videoCallLink}">here</a> to join the video call.</p>
+  `;
+
+  await sendEmail(patientEmail, "Your Video Consultation Link", emailContent);
+  await sendEmail(doctorEmail, "Your Video Consultation Link", emailContent);
+    // Send the video call link via email
+    // await sendVideoCallEmails(patientEmail, doctorEmail, videoCallLink, consultationTime);
 
     return res.json({
-      message: "Link generated successfully",
+      message: "Link generated and emails sent successfully",
       link: videoCallLink,
       consultationId: newConsultation._id,
     });
@@ -34,6 +58,66 @@ export const generateVideoCallLink = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Function to send email to both doctor and patient
+// const sendVideoCallEmails = async (patientEmail, doctorEmail, videoCallLink, consultationTime) => {
+//   try {
+//     const transporter = nodemailer.createTransport({
+//       service: "gmail",
+//       auth: {
+//         user: process.env.EMAIL_USER, // Your email
+//         pass: process.env.EMAIL_PASS, // App-specific password
+//       },
+//     });
+
+//     const mailOptions = [
+//       {
+//         from: process.env.EMAIL_USER,
+//         to: patientEmail,
+//         subject: "Your Video Consultation Link",
+//         text: `Dear Patient,\n\nYour video consultation is scheduled at ${consultationTime}.\nHere is your video link: ${videoCallLink}\n\nPlease join at the scheduled time.\n\nBest regards,\nYour Healthcare Team`,
+//       },
+//       {
+//         from: process.env.EMAIL_USER,
+//         to: doctorEmail,
+//         subject: "Video Consultation Link",
+//         text: `Dear Doctor,\n\nYou have a scheduled video consultation at ${consultationTime}.\nHere is the video link: ${videoCallLink}\n\nPlease join at the scheduled time.\n\nBest regards,\nYour Healthcare Team`,
+//       },
+//     ];
+
+//     // await Promise.all(mailOptions.map((mail) => transporter.sendMail(mail)));
+//     await transporter.sendMail(mailOptions);
+
+//     console.log("Emails sent successfully to patient and doctor.");
+//   } catch (error) {
+//     console.error("Failed to send emails:", error.message);
+//   }
+// };
+const sendEmail = async (to, subject, content) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER, // Your email
+        pass: process.env.EMAIL_PASS, // App-specific password
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      html: content,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error.message);
+  }
+};
+
+
 
 // Controller function to get consultation by ID
 // export const getConsultationById = async (req, res) => {
