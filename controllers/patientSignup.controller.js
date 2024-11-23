@@ -39,7 +39,7 @@ export const patientRegistration = async (req, res) => {
     // Email to the admin
     const adminMailOptions = {
       from: process.env.EMAIL_USER,
-      to: "ioncosolutions@gmail.com", // Replace with your admin email
+      to: "tl.webcodeft@gmail.com", // Replace with your admin email
       subject: "New Patient Registration",
       text: `Hi Admin,\n\nA new patient has registered on the platform.
       \n\nDetails:\nName: ${firstName}\nEmail: ${email}\nOther Details: ${JSON.stringify(

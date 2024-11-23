@@ -1,21 +1,77 @@
 import DoctorSignup from "../models/doctorsignup.model.js";
 import mongoose from 'mongoose';
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+// export const doctorRegistration = async (req, res) => {
+//     const { email, ...otherFields } = req.body;
+  
+//     try {
+//       const existingUser = await DoctorSignup.findOne({ email });
+//       if (existingUser) {
+//         return res.status(409).json({ message: 'Email already exists. Please use a different email.' });
+//       }
+  
+//       const newUser = await DoctorSignup.create({ email, ...otherFields });
+//       res.status(201).json({ message: 'Signup successful', user: newUser });
+//     } catch (error) {
+//       res.status(500).json({ message: error.message });
+//     }
+//   };
 
 export const doctorRegistration = async (req, res) => {
-    const { email, ...otherFields } = req.body;
-  
-    try {
-      const existingUser = await DoctorSignup.findOne({ email });
-      if (existingUser) {
-        return res.status(409).json({ message: 'Email already exists. Please use a different email.' });
-      }
-  
-      const newUser = await DoctorSignup.create({ email, ...otherFields });
-      res.status(201).json({ message: 'Signup successful', user: newUser });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+  const { email, firstName, ...otherFields } = req.body;
+
+  try {
+    // Check if the email already exists
+    const existingUser = await DoctorSignup.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Email already exists. Please use a different email.' });
     }
-  };
+
+    // If email is unique, create a new user
+    const newUser = await DoctorSignup.create({ email, firstName, ...otherFields });
+
+    // Set up Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Email to the new doctor
+    const doctorMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Welcome to Our Platform",
+      text: `Hi Dr. ${firstName},\n\nThank you for registering with us. We are thrilled to have you onboard as part of our team!\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
+    };
+
+    // Email to the admin
+    const adminMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: "tl.webcodeft@gmail.com", // Replace with your admin email
+      subject: "New Doctor Registration",
+      text: `Hi Admin,\n\nA new doctor has registered on the platform.
+      \n\nDetails:\nName: Dr. ${firstName}\nEmail: ${email}\nOther Details: ${JSON.stringify(
+        otherFields,
+        null,
+        2
+      )}\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
+    };
+
+    // Send the emails
+    await transporter.sendMail(doctorMailOptions);
+    await transporter.sendMail(adminMailOptions);
+
+    res.status(201).json({ message: 'Signup successful', user: newUser });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 //Get the doctor's data
 export const getDoctors = async (req, res) => {
