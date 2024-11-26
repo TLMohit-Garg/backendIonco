@@ -4,8 +4,8 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 
 dotenv.config();
-console.log("process.env.EMAIL_USER:-- ",process.env.EMAIL_USER)
-console.log("process.env.EMAIL_PASS:-- ",process.env.EMAIL_PASS)
+// console.log("process.env.EMAIL_USER:-- ",process.env.EMAIL_USER)
+// console.log("process.env.EMAIL_PASS:-- ",process.env.EMAIL_PASS)
 
 export const patientRegistration = async (req, res) => {
     const { email, firstName, ...otherFields } = req.body;

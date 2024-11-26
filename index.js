@@ -11,6 +11,7 @@ import consultationRoutes from "./routes/consultation.route.js";
 import doctorBankingDetailRoutes from "./routes/doctorBankingDetail.route.js";
 import adminSigninRouter from "./routes/adminSignin.route.js";
 import userRoutes from "./routes/user.route.js";
+import availabilityRoutes from "./routes/availability.route.js";
 import videoCallDetailRoutes from "./routes/videocallDetail.route.js";
 // import { generateVideoCallLink } from './controllers/videoCalldetails.controller.js';
 import { authenticateToken } from "./middleware/authMiddleware.js";
@@ -20,8 +21,8 @@ import { Stripe } from "stripe";
 import stripe from "./routes/stripe.route.js";
 
 dotenv.config();
-console.log("PORT:", process.env.PORT);
-console.log("DB_URI:", process.env.MONGO_URI);
+// console.log("PORT:", process.env.PORT);
+// console.log("DB_URI:", process.env.MONGO_URI);
 
 const app = express();
 app.use(
@@ -33,9 +34,9 @@ app.use(express.json()); //middleware configurations.
 
 // const JWT_SECRET = process.env.JWT_SECRET
 const port = process.env.PORT || 3000;
-console.log("PORT:", process.env.PORT);
+// console.log("PORT:", process.env.PORT);
 const MONGO_URI = process.env.MONGO_URI;
-console.log("MONGO_URI:", process.env.MONGO_URI);
+// console.log("MONGO_URI:", process.env.MONGO_URI);
 // const JWT_SECRET = "931079ede9061896e77a0516ba2351c0a6680fa90e117cc3b3e355b7c12c7efc1893159a2ef2e0c4811e785bb69ee262b40c0686ed185eb6d49a293701c99049";
 
 //routes
@@ -51,6 +52,7 @@ app.use("/api/doctorBankingDetail", doctorBankingDetailRoutes);
 app.use("/api/stripe", stripe);
 app.use("/api/users", userRoutes);
 app.use("/api/videoCallDetail", videoCallDetailRoutes);
+app.use("/api/availability", availabilityRoutes);
 // app.use("/uploads", express.static("uploads"));
 
 app.get("/", function (req, res) {
