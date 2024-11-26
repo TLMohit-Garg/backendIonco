@@ -9,7 +9,7 @@ const ConsultationSchema = mongoose.Schema(
     email: {
       type: String,
       required: [true, "Please enter your email"],
-      unique: true,
+      // unique: true,
     },
     prefferDate: {
       type: String,
@@ -36,17 +36,17 @@ const ConsultationSchema = mongoose.Schema(
       required: ["Provide some description if you want to..."],
     },
     images: [
-        {
-          filename: {
-            type: String,
-            required: false,
-          },
-          url: {
-            type: String,
-            required: false,
-          },
-        }
-      ],
+      {
+        filename: {
+          type: String,
+          required: false,
+        },
+        url: {
+          type: String,
+          required: false,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
