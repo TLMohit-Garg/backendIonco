@@ -1,6 +1,8 @@
 import DoctorConsultation  from '../models/stripe.model.js';
 import dotenv from 'dotenv';
 import Stripe from 'stripe';
+import nodemailer from "nodemailer";
+
 const endpointSecret = 'your-webhook-signing-secret';
 
 dotenv.config();
@@ -49,6 +51,7 @@ export const getCheckoutSession = async (req, res) => {
 
     if(session.payment_status === "paid"){
       sendPaymentSuccessEmail(session.customer_email, session.amount_total / 100, session.currency, session.id);
+      sendPaymentSuccessEmail(process.env.ADMIN_EMAIL, session.amount_total / 100, session.currency, session.id);
     }
     res.status(200).send(session);
   } catch (error) {
@@ -76,11 +79,13 @@ const sendPaymentSuccessEmail = async (email, amount, currency, sessionId) => {
       //  \n\nWe look forward to serving you.\n\nBest Regards,\nYour Healthcare Team`,
       text: `Dear ${
         email === process.env.ADMIN_EMAIL ? 'Admin' : 'User'
-      },\n\nThank you for your payment of ${amount} ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.\n\nBest Regards,\nYour Healthcare Team`,
+      },\n\nThank you for your payment of ${amount} ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.\n\nBest Regards,\nTeleconsultation-IoncoSolutions
+
+`,
     };
 
     await transporter.sendMail(mailOptions);
-    console.log('Payment success email sent.');
+    console.log(`Payment success email sent.${email}`);
   } catch (error) {
     console.error('Failed to send payment success email:', error.message);
   }
