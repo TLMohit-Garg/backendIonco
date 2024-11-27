@@ -2,6 +2,8 @@ import Signup from"../models/signup.model.js";
 import mongoose from 'mongoose';
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import path from "path";
+import pug from "pug";
 
 dotenv.config();
 // console.log("process.env.EMAIL_USER:-- ",process.env.EMAIL_USER)
@@ -27,13 +29,36 @@ export const patientRegistration = async (req, res) => {
         pass: process.env.EMAIL_PASS ,
       },
     });
+    
+// Path to the Pug template
+const patientTemplatePath = path.resolve(
+  "emailTemplates",
+  "patientWelcome.pug"
+);
+const adminTemplatePath = path.resolve(
+  "emailTemplates",
+  "patientAdminNotification.pug"
+);
 
+// Render the Pug templates
+const patientMailHtml = pug.renderFile(patientTemplatePath, {
+  firstName,
+  year: new Date().getFullYear(),
+});
+
+const adminMailHtml = pug.renderFile(adminTemplatePath, {
+  firstName,
+  email,
+  details: JSON.stringify(otherFields, null, 2),
+  year: new Date().getFullYear(),
+});
     // Email to the new patient
     const patientMailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Welcome to Our Platform",
-      text: `Hi ${firstName},\n\nThank you for registering with us. We are thrilled to have you onboard!\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
+      html: patientMailHtml,
+      // text: `Hi ${firstName},\n\nThank you for registering with us. We are thrilled to have you onboard!\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
     };
 
     // Email to the admin
@@ -41,12 +66,14 @@ export const patientRegistration = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: "tl.webcodeft@gmail.com", // Replace with your admin email
       subject: "New Patient Registration",
-      text: `Hi Admin,\n\nA new patient has registered on the platform.
-      \n\nDetails:\nName: ${firstName}\nEmail: ${email}\nOther Details: ${JSON.stringify(
-        otherFields,
-        null,
-        2
-      )}\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
+      html: adminMailHtml,
+
+      // text: `Hi Admin,\n\nA new patient has registered on the platform.
+      // \n\nDetails:\nName: ${firstName}\nEmail: ${email}\nOther Details: ${JSON.stringify(
+      //   otherFields,
+      //   null,
+      //   2
+      // )}\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
     };
 
     // Send the emails

@@ -1,0 +1,68 @@
+doctype html
+html
+  head
+    style.
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .header {
+        background-color: #001439;
+        padding: 20px;
+        text-align: center;
+        color: white;
+      }
+      .content {
+        padding: 20px;
+        color: #555;
+      }
+      .footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      table th, table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      table th {
+        background-color: #f4f4f4;
+      }
+
+  body
+    .header
+      h1 New Doctor Registration
+    .content
+      p Hi Admin,
+      p A new doctor has registered on your platform:
+
+      // First table: Name and Email
+      table
+        tr
+          th Name
+          td Dr. #{firstName}
+        tr
+          th Email
+          td #{email}
+
+      // Second table: Details (excluding password and confirmPassword)
+      - var detailsObj = JSON.parse(details)
+      table
+        tr
+          th 
+          th 
+        each value, key in detailsObj
+          if key !== 'password' && key !== 'confirmPassword'
+            tr
+              th #{key}
+              td #{value}
+      
+      p Best Regards,
+      p Teleconsultation-IoncoSolutions
+    .footer
+      p &copy; #{year} Teleconsultation-IoncoSolutions. All Rights Reserved.
