@@ -8,11 +8,19 @@ const endpointSecret = 'your-webhook-signing-secret';
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
+const baseUrl =
+  process.env.NODE_ENV === "production"
+    ? process.env.CLIENT_URL_LIVE
+    : process.env.CLIENT_URL_LOCAL;
+
 // POST request to create a Stripe Checkout Session
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { patientEmail, doctorPrice, preferredCurrency, doctorName, serviceCharges } = req.body;
+    const { patientEmail, doctorPrice, preferredCurrency, doctorName, patientName, serviceCharges } = req.body;
 
+    // if (!patientEmail || !doctorPrice || !preferredCurrency || !doctorName) {
+    //   return res.status(400).send({ error: 'Missing required fields' });
+    // }
     // Convert the price to cents and create a checkout session
     const session = await stripe.checkout.sessions.create({
       customer_email: patientEmail,
@@ -31,8 +39,12 @@ export const createCheckoutSession = async (req, res) => {
         
       ],
       mode: 'payment',
-      success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/cancel`,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/cancel`,
+      metadata: {
+        patient_name: patientName, // Store patient name in metadata
+        patient_email: patientEmail, // Store patient email in metadata
+      },
     });
 
     // Send the session URL back to the client
@@ -48,10 +60,25 @@ export const getCheckoutSession = async (req, res) => {
   
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+    // if (!session) {
+    //   return res.status(404).send({ error: 'Session not found' });
+    // }
 
     if(session.payment_status === "paid"){
-      sendPaymentSuccessEmail(session.customer_email, session.amount_total / 100, session.currency, session.id);
-      sendPaymentSuccessEmail(process.env.ADMIN_EMAIL, session.amount_total / 100, session.currency, session.id);
+      // Retrieve patient details from metadata
+      const patientName = session.metadata.patient_name;
+      const patientEmail = session.metadata.patient_email;
+      
+      sendPaymentSuccessEmail(session.customer_email, session.amount_total / 100, 
+        session.currency, 
+        session.id,
+        patientName, 
+        patientEmail );
+      sendPaymentSuccessEmail(process.env.ADMIN_EMAIL, session.amount_total / 100, 
+        session.currency, 
+        session.id,
+        patientName, 
+        patientEmail );
     }
     res.status(200).send(session);
   } catch (error) {
@@ -60,7 +87,7 @@ export const getCheckoutSession = async (req, res) => {
 };
 
 // Function to send payment success email
-const sendPaymentSuccessEmail = async (email, amount, currency, sessionId) => {
+const sendPaymentSuccessEmail = async (email, amount, currency, sessionId, patientName, patientEmail) => {
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -70,6 +97,16 @@ const sendPaymentSuccessEmail = async (email, amount, currency, sessionId) => {
       },
     });
 
+    let textContent;
+
+    if (email === process.env.ADMIN_EMAIL) {
+      // For Admin email, include patient details
+      textContent = `Dear Admin,\n\nA transaction has been successfully completed.\n\nPatient Details:\nName: ${patientName}\nEmail: ${patientEmail}\n\nPayment Details:\nAmount: ${amount} ${currency.toUpperCase()}\nSession ID: ${sessionId}\n\nPlease check the transaction in your Stripe dashboard.\n\nBest Regards,\nTeleconsultation-IoncoSolutions`;
+    } else {
+      // For User email, keep original content
+      textContent = `Dear User,\n\nThank you for your payment of ${amount} ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.\n\nBest Regards,\nTeleconsultation-IoncoSolutions`;
+    }
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -77,11 +114,7 @@ const sendPaymentSuccessEmail = async (email, amount, currency, sessionId) => {
       // text: `Dear User,\n\nThank you for your payment of ${amount}
       //  ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.
       //  \n\nWe look forward to serving you.\n\nBest Regards,\nYour Healthcare Team`,
-      text: `Dear ${
-        email === process.env.ADMIN_EMAIL ? 'Admin' : 'User'
-      },\n\nThank you for your payment of ${amount} ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.\n\nBest Regards,\nTeleconsultation-IoncoSolutions
-
-`,
+      text: textContent,
     };
 
     await transporter.sendMail(mailOptions);
@@ -126,7 +159,9 @@ export const handleStripeWebhook =async (req, res) => {
         session.customer_email, 
         session.amount_total / 100, 
         session.currency, 
-        session.id
+        session.id,
+        patientName, 
+       patientEmail 
       );
 
       // Send email to the admin
@@ -134,7 +169,9 @@ export const handleStripeWebhook =async (req, res) => {
         process.env.ADMIN_EMAIL, // Admin email
         session.amount_total / 100,
         session.currency,
-        session.id
+        session.id,
+        patientName, 
+       patientEmail 
       );
 
           break;
