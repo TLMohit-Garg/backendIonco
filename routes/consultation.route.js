@@ -1,25 +1,16 @@
 import express from "express";
 import {bookConsultation, getConsultation, getconsultationId} from "../controllers/consultation.controller.js";
-import multer from "multer";
+import patientDocsUpload from "../middleware/patientDocsUpload.js";
 
 const router = express.Router();
 
-// Set up multer for file uploads
-// const upload = multer({ dest: "uploads/" });
+router.post('/createConsultation', patientDocsUpload.array('images', 10), 
+(req, res, next) => {
+    console.log('Body:', req.body);
+    console.log('File:', req.file);  // To check if the file is being uploaded correctly
+    next();  // Proceed to the next middleware/controller
+  },bookConsultation);
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'uploads/')
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now()
-      cb(null,uniqueSuffix + file.originalname);
-    }
-  })
-  
-  const upload = multer({ storage: storage })
-
-router.post("/", upload.array("images", 10), bookConsultation);
 router.get("/", getConsultation);
 router.get("/:id",getconsultationId);
 
