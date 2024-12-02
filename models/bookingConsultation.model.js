@@ -6,7 +6,7 @@ const ConsultationSchema = mongoose.Schema(
       type: String,
       required: [true, "Please enter full name"],
     },
-    email: {
+    email: {  
       type: String,
       required: [true, "Please enter your email"],
       // unique: true,
@@ -35,19 +35,14 @@ const ConsultationSchema = mongoose.Schema(
       type: String,
       required: ["Provide some description if you want to..."],
     },
-    images: [
-      {
-        filename: {
-          type: String,
-          required: false,
-        },
-        url: {
-          type: String,
-          required: false,
-        },
-      },
-    ],
+    images:{ type: [String], required: [true, "Please upload your Docs"] },
+    doctorId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Doctor",  // This will reference the Doctor profile model
+      required: [true, "Doctor is required"]
+    },
   },
+  
   {
     timestamps: true,
   }

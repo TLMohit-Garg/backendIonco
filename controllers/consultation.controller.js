@@ -1,29 +1,51 @@
 import consultationSchema from "../models/bookingConsultation.model.js";
+import cloudinary from "../config/cloudinary.js";
+import multer from "multer";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import path from "path";
+import pug from "pug";
 
-// export  const bookConsultation = async(req, res) => {
-//     try {
-//       const consultation =  await consultationSchema.create(req.body);
-//       res.status(200).json(consultation);
-//     } catch (error) {
-//     res.status(500).json({message: error.message});
+// Multer setup for parsing form-data
+const upload = multer({ dest: "patientDocsUpload/" });
+dotenv.config();
 
-//     }
-// };
 export const bookConsultation = async (req, res) => {
-  try {
-    console.log("Received files:", req.files);
-    // If files are uploaded, map over them to create the image objects
-    let images = [];
-    if (req.files && req.files.length > 0) {
-      images = req.files.map((file) => ({
-        filename: file.filename,
-        url: `http://localhost:3000/uploads/${file.filename}`, // Adjust the URL as per your setup
-      }));
-    }
+  const {
+    doctorId,
+    fullName,
+    email,
+    prefferDate,
+    nationality,
+    timezone,
+    cancertype,
+    phone,
+    description,
+  } = req.body;
+  console.log("req.file is :-", req.files);
 
-    // Formatting the prefferDate before storing
-    if (req.body.prefferDate) {
-      const date = new Date(req.body.prefferDate);
+   // Ensure the image file is uploaded
+   if (!req.files || req.files.length === 0) {
+    return res.status(400).send({ message: "No image file uploaded" });
+  }
+  if (!doctorId || !fullName || !email || !prefferDate) {
+    return res.status(400).json({ message: "All required fields must be provided." });
+  }
+
+  try {
+    // Upload all files to Cloudinary
+    const uploadPromises = req.files.map((file) =>
+      cloudinary.uploader.upload(file.path, { folder: 'patientDocuments' })
+    );
+    const uploadResults = await Promise.all(uploadPromises);
+
+    // Extract secure URLs from Cloudinary response
+    const fileUrls = uploadResults.map((result) => result.secure_url);
+
+    // Format the preferred date
+    let formattedPrefferDate = prefferDate;
+    if (prefferDate) {
+      const date = new Date(prefferDate);
       const options = {
         weekday: "short",
         year: "numeric",
@@ -33,33 +55,132 @@ export const bookConsultation = async (req, res) => {
         minute: "numeric",
         hour12: true,
       };
-      req.body.prefferDate = date.toLocaleString("en-US", options);
+      formattedPrefferDate = date.toLocaleString("en-US", options);
     }
 
-    // Create a new consultation entry with the images included
+    
+    // Create a new consultation entry
     const consultation = await consultationSchema.create({
-      ...req.body,
-      images: images,
+      fullName,
+      email,
+      prefferDate: formattedPrefferDate,
+      nationality,
+      timezone,
+      cancertype,
+      phone,
+      description,
+      doctorId,
+      images: fileUrls, // Use Cloudinary's URL for the uploaded file
     });
     console.log("Saved consultation:", consultation);
+    
+ // Populate doctor details
+ const populatedConsultation = await consultationSchema
+ .findById(consultation._id)
+ .populate({
+  path: "doctorId",
+  populate: { path: "userId" }, // Populate the userId inside doctorId
+});
 
-    res.status(200).json(consultation);
+console.log("populateEntiredata :-", populatedConsultation);
+    // Assuming `populatedConsultation` contains the populated response
+if (populatedConsultation?.doctorId?.userId) {
+  const doctorUserId = populatedConsultation.doctorId.userId._id;
+  const doctorFirstName = populatedConsultation.doctorId.userId?.firstName;
+  const doctorLastName = populatedConsultation.doctorId.userId?.lastName;
+  const doctorEmail = populatedConsultation.doctorId.userId?.email;
+
+  console.log("Doctor User ID:", doctorUserId);
+  console.log("Doctor First Name:", doctorFirstName);
+  console.log("Doctor Last Name:", doctorLastName);
+  console.log("Doctor Email:", doctorEmail);
+} else {
+  console.log("Doctor or User data is missing in the populated response.");
+}
+
+
+const doctorEmail = populatedConsultation?.doctorId?.userId?.email;
+const doctorName = populatedConsultation?.doctorId?.userId?.firstName;
+
+if (!email || !doctorEmail || !process.env.ADMIN_EMAIL) {
+  throw new Error("Missing required email addresses.");
+}
+
+    // Set up Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Path to the Pug templates
+    const patientTemplatePath = path.resolve("emailTemplates", "patientBooking.pug");
+    const doctorTemplatePath = path.resolve("emailTemplates", "doctorNotification.pug");
+    const adminTemplatePath = path.resolve("emailTemplates", "adminBookingNotification.pug");
+
+    // Render the Pug templates
+    const patientMailHtml = pug.renderFile(patientTemplatePath, {
+      fullName,
+      doctorName,
+      prefferDate: formattedPrefferDate,
+      cancertype,
+      timezone,
+    });
+
+    const doctorMailHtml = pug.renderFile(doctorTemplatePath, {
+      doctorName, // Assuming `fullName` exists for doctors
+      patientName: fullName,
+      prefferDate: formattedPrefferDate,
+      description,
+    });
+
+    const adminMailHtml = pug.renderFile(adminTemplatePath, {
+      patientName: fullName,
+      doctorName,
+      prefferDate: formattedPrefferDate,
+      details: JSON.stringify({ nationality, timezone, cancertype, phone }, null, 2),
+    });
+
+    // Email to the patient
+    const patientMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Consultation Booking Confirmation",
+      html: patientMailHtml,
+    };
+
+    // Email to the doctor
+    const doctorMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: doctorEmail, // Doctor's email fetched from the database
+      subject: "New Consultation Booking Notification",
+      html: doctorMailHtml,
+    };
+
+    // Email to the admin
+    const adminMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.ADMIN_EMAIL, // Admin email stored in .env
+      subject: "New Consultation Booking Details",
+      html: adminMailHtml,
+    };
+
+    // Send the emails
+    await transporter.sendMail(patientMailOptions);
+    await transporter.sendMail(doctorMailOptions);
+    await transporter.sendMail(adminMailOptions);
+
+    res.status(201).json({
+      message: "Consultation booked successfully",
+      consultation: populatedConsultation,
+    });
   } catch (error) {
+    console.error("Error booking consultation:", error);
     res.status(500).json({ message: error.message });
   }
 };
-
-// export const bookConsultation = async (req, res) => {
-//     try {
-//       console.log("Received images:", req.body.images); // Log the received images
-
-//       const consultation = await consultationSchema.create(req.body);
-
-//       res.status(200).json(consultation);
-//     } catch (error) {
-//       res.status(500).json({ message: error.message });
-//     }
-//   };
 
 // controller to get consultation detail
 export const getConsultation = async (req, res) => {

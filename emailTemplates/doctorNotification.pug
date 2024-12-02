@@ -1,0 +1,46 @@
+doctype html
+html
+  head
+    style.
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .header {
+        background-color: #001439;
+        padding: 20px;
+        text-align: center;
+        color: white;
+      }
+      .content {
+        padding: 20px;
+        color: #555;
+      }
+      .footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+      }
+  body
+    .header
+      h1 New Consultation Booking Notification
+    .content
+      p Dear #{doctorName || 'Unknown Doctor'},
+      p You have a new consultation booking request with the following details:
+
+      table
+        tr
+          th Patient Name
+          td #{patientName}
+        tr
+          th Preferred Date
+          td #{prefferDate}
+        tr
+          th Description
+          td #{description}
+
+      p Please review the details and confirm your availability.
+      p Best Regards,
+      p Teleconsultation-IoncoSolutions
+    .footer
+      p &copy; #{year} Teleconsultation-IoncoSolutions. All Rights Reserved.
