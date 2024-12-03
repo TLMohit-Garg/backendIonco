@@ -13,6 +13,7 @@ import adminSigninRouter from "./routes/adminSignin.route.js";
 import userRoutes from "./routes/user.route.js";
 import availabilityRoutes from "./routes/availability.route.js";
 import videoCallDetailRoutes from "./routes/videocallDetail.route.js";
+import tempBookingConsultationRoutes from "./routes/tempBookingConsultation.route.js";
 // import { generateVideoCallLink } from './controllers/videoCalldetails.controller.js';
 import { authenticateToken } from "./middleware/authMiddleware.js";
 import dotenv from "dotenv";
@@ -51,6 +52,7 @@ app.use("/api/doctorSignin", doctorSigninRoutes);
 app.use("/api/bookingConsultation", consultationRoutes);
 app.use("/api/doctorBankingDetail", doctorBankingDetailRoutes);
 app.use("/api/stripe", stripe);
+app.use("/api/tempBookingConsultation", tempBookingConsultationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/videoCallDetail", videoCallDetailRoutes);
 app.use("/api/availability", availabilityRoutes);
@@ -117,7 +119,7 @@ mongoose
     console.log("Connected to the database successfully!");
     app.listen(port, () => {
       // console.log(`Server is running on http://localhost:${port}`);
-      console.log(`Server is running on http://${host}::${port}`);
+      console.log(`Server is running on http://${host}:${port}`);
     });
   })
   .catch((error) => {
