@@ -34,6 +34,7 @@ app.use(express.json()); //middleware configurations.
 
 // const JWT_SECRET = process.env.JWT_SECRET
 const port = process.env.PORT || 3000;
+const host = process.env.HOST || "localhost";
 // console.log("PORT:", process.env.PORT);
 const MONGO_URI = process.env.MONGO_URI;
 // console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -115,7 +116,8 @@ mongoose
   .then(() => {
     console.log("Connected to the database successfully!");
     app.listen(port, () => {
-      console.log(`Server is running on http://localhost:${port}`);
+      // console.log(`Server is running on http://localhost:${port}`);
+      console.log(`Server is running on http://${host}::${port}`);
     });
   })
   .catch((error) => {
