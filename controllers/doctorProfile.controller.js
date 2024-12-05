@@ -20,6 +20,7 @@ export const createDoctorProfile = async (req, res) => {
     country,
     qualification,
     workExperience,
+    preferredCurrency,
   } = req.body;
   console.log("req.file is :-", req.file);
 
@@ -53,6 +54,7 @@ export const createDoctorProfile = async (req, res) => {
       country,
       qualification,
       workExperience,
+      preferredCurrency,
       imageUrl: result.secure_url, // Cloudinary image URL
     });
 

@@ -27,6 +27,10 @@ const doctorSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please mention your workExperience"],
     },
+    preferredCurrency: {
+      type: String,
+      required: [true, "Please select your preferredCurrency"],
+    },
     imageUrl: { type: String, required: [true, "Please upload your image"] }, // URL of the uploaded image in Cloudinary
   },
   { timestamps: true }

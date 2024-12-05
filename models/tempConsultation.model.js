@@ -43,6 +43,16 @@ const TempConsultationSchema = mongoose.Schema(
       ref: "Doctor", // Reference to the Doctor profile model
       required: [true, "Doctor is required"],
     },
+    doctorName: {
+      type: String,
+      ref: "Doctor", // Reference to the Doctor profile model
+      required: [false, "DoctorName is required"],
+    },
+    doctorPrice: {
+      type: String,
+      ref: "Doctor", // Reference to the Doctor profile model
+      required: [false, "doctorPrice is required"],
+    },
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],
@@ -50,7 +60,7 @@ const TempConsultationSchema = mongoose.Schema(
     },
     paymentSessionId: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   {
