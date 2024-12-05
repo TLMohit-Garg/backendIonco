@@ -36,11 +36,7 @@ const DoctorsignupSchema = mongoose.Schema(
     gender: {
       type: String,
       required: [true, "Please select your gender"],
-    },
-    charges: {
-      type: String,
-      required: [true, "Please mention your charges"],
-    },
+    }
   },
   {
     timestamps: true,

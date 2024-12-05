@@ -83,13 +83,7 @@ export const doctorRegistration = async (req, res) => {
       to: email,
       subject: "Welcome to Our Platform",
       html: doctorMailHtml,
-      // template: "doctorWelcome",
-      // context: {
-      //   firstName,
-      //   year: new Date().getFullYear(),
-      // },
-      // text: `Hi Dr. ${firstName},\n\nThank you for registering with us. We are thrilled to have you onboard as part of our team!\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
-    };
+      };
 
     // Email to the admin
     const adminMailOptions = {
@@ -97,26 +91,18 @@ export const doctorRegistration = async (req, res) => {
       to: "tl.webcodeft@gmail.com", // Replace with your admin email
       subject: "New Doctor Registration",
       html: adminMailHtml,
-      // template: "adminNotification",
-      // context: { 
-      //   firstName,
-      //   email,
-      //   details: JSON.stringify(otherFields, null, 2),
-      //   year: new Date().getFullYear(),
-      // },
-      // text: `Hi Admin,\n\nA new doctor has registered on the platform.
-      // \n\nDetails:\nName: Dr. ${firstName}\nEmail: ${email}\nOther Details: ${JSON.stringify(
-      //   otherFields,
-      //   null,
-      //   2
-      // )}\n\nBest Regards,\nTeleconsultation-IoncoSolutions`,
     };
 
-    // Send the emails
+    // Send emails
+    try {
     await transporter.sendMail(doctorMailOptions);
     await transporter.sendMail(adminMailOptions);
-
+    }catch (emailError) {
+      console.error("Email sending failed:", emailError.message);
+      // Log the error but do not fail the signup process
+    }
     res.status(201).json({ message: "Signup successful", user: newUser });
+    console.log("user Signup successful", user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -185,6 +171,7 @@ export const updateDoctor = async (req, res) => {
     const doctor = await DoctorSignup.findByIdAndUpdate(id, req.body, {
       new: true, // Returns the updated document
       runValidators: true, // Ensures updated data is validated against the schema
+      strict: true, // Ensure only defined schema fields are updated
     });
 
     // Check if doctor exists
@@ -193,7 +180,10 @@ export const updateDoctor = async (req, res) => {
     }
 
     // Return the updated doctor details
-    res.status(200).json(doctor);
+    res.status(200).json({
+      message: "Doctor updated successfully",
+      doctor: doctor,
+    });
   } catch (error) {
     // Log the error for debugging
     console.error("Error updating doctor:", error);

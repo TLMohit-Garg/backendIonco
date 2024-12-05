@@ -9,7 +9,6 @@ const ConsultationSchema = mongoose.Schema(
     email: {  
       type: String,
       required: [true, "Please enter your email"],
-      // unique: true,
     },
     prefferDate: {
       type: String,
@@ -40,6 +39,16 @@ const ConsultationSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId, 
       ref: "Doctor",  // This will reference the Doctor profile model
       required: [true, "Doctor is required"]
+    },
+    doctorName: {
+      type: String,
+      ref: "Doctor", // Reference to the Doctor profile model
+      required: [false, "DoctorName is required"],
+    },
+    doctorPrice: {
+      type: String,
+      ref: "Doctor", // Reference to the Doctor profile model
+      required: [false, "doctorPrice is required"],
     },
   },
   
