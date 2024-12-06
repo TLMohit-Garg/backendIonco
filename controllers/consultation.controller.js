@@ -5,6 +5,7 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import path from "path";
 import pug from "pug";
+import mongoose from "mongoose";
 
 // Multer setup for parsing form-data
 const upload = multer({ dest: "patientDocsUpload/" });
@@ -28,7 +29,7 @@ export const bookConsultation = async (req, res) => {
    if (!req.files || req.files.length === 0) {
     return res.status(400).send({ message: "No image file uploaded" });
   }
-  if (!doctorId || !fullName || !email || !prefferDate) {
+  if (!doctorId || !fullName  || !prefferDate) {
     return res.status(400).json({ message: "All required fields must be provided." });
   }
 
@@ -201,5 +202,75 @@ export const getconsultationId = async (req, res) => {
     res.status(200).json(consultationDetails);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+
+//Get request consultation with doctorId 
+export const getConsultationsByDoctorId = async (req, res) => {
+  const { doctorId } = req.params;
+
+  // Validate the doctorId
+  if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+    return res.status(400).json({ error: "Invalid doctor ID" });
+  }
+
+  console.log("Doctor ID from params:", doctorId);
+  try {
+    // Query consultations based on doctorId
+    const consultations = await consultationSchema
+      .find({ doctorId: doctorId })
+      // .populate("doctorId", "name price") // Adjust based on fields in Doctor schema
+      .populate({
+        path: "doctorId", // Reference the doctorId field
+        model: "Doctor", // Name of the model
+      })
+      .sort({ createdAt: -1 }); // Sort by latest first
+
+      console.log("Consultations fetched:", consultations);
+
+    // Handle if no consultations found
+    if (!consultations.length) {
+      return res.status(200).json({ message: "No consultations found for this doctor." });
+    }
+
+    res.status(200).json(consultations);
+  } catch (error) {
+    console.error("Error fetching consultations:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+//Get request consultation with patientId
+export const getConsultationsByPatientId = async (req, res) => {
+  const { patientId } = req.params;
+  console.log("Patient ID from params:", patientId);
+  // Validate the patientId
+  if (!mongoose.Types.ObjectId.isValid(patientId)) {
+    return res.status(400).json({ error: "Invalid patient ID" });
+  }
+
+  try {
+    // Fetch consultations for the given patientId
+    const consultations = await consultationSchema
+      .find({ patientId: patientId })
+      // .populate("patientId", "name price") // Optionally populate doctor details
+      .populate({
+        path: "patientId", // Reference the doctorId field
+        model: "Patient", // Name of the model
+      })
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+      console.log("Consultations fetched:", consultations);
+
+    if (!consultations.length) {
+      return res.status(404).json({ message: "No consultations found for this patient." });
+    }
+
+    res.status(200).json(consultations);
+  } catch (error) {
+    console.error("Error fetching consultations for patient:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

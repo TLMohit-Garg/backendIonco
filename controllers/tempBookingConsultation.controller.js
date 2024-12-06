@@ -7,6 +7,7 @@ import multer from "multer";
 import nodemailer from "nodemailer";
 import path from "path";
 import pug from "pug";
+import mongoose from "mongoose";
 
 
 // Multer setup for parsing form-data
@@ -51,6 +52,7 @@ export const getTempConsultationBookingSession = async (req, res) => {
         description: tempBooking.description,
         images: tempBooking.images,
         doctorId: tempBooking.doctorId,
+        patientId: tempBooking.patientId,
       });
 
       await finalBooking.save();
@@ -89,6 +91,8 @@ export const getTempConsultationBookingSession = async (req, res) => {
 
       const doctorEmail = populatedBooking?.doctorId?.userId?.email;
       const doctorName = populatedBooking?.doctorId?.userId?.firstName;
+      console.log("doctor email--", doctorEmail);
+      console.log("doctor name:--", doctorName);
 
       // Render Pug templates
       const patientMailHtml = pug.renderFile(patientTemplatePath, {
@@ -179,6 +183,7 @@ export const createTempConsultation = async (req, res) => {
       phone,
       description,
       doctorId,
+      patientId,
       doctorName,
       doctorPrice,
       preferredCurrency,
@@ -240,6 +245,7 @@ export const createTempConsultation = async (req, res) => {
       description,
       images: fileUrls,
       doctorId,
+      patientId,
       paymentStatus: "pending", // Default to pending
     });
 
@@ -283,5 +289,36 @@ export const createTempConsultation = async (req, res) => {
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+//Get request consultation with doctorId 
+export const getConsultationsByDoctorId = async (req, res) => {
+  const { doctorId } = req.params;
+
+  // Validate the doctorId
+  if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+    return res.status(400).json({ error: "Invalid doctor ID" });
+  }
+
+  console.log("Doctor ID from params:", doctorId);
+  try {
+    // Query consultations based on doctorId
+    const consultations = await TempConsultation
+      .find({ doctorId })
+      .populate("doctorId", "name price") // Adjust based on fields in Doctor schema
+      .sort({ createdAt: -1 }); // Sort by latest first
+
+      console.log("Consultations fetched:", consultations);
+
+    // Handle if no consultations found
+    if (!consultations.length) {
+      return res.status(200).json({ message: "No consultations found for this doctor." });
+    }
+
+    res.status(200).json(consultations);
+  } catch (error) {
+    console.error("Error fetching consultations:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

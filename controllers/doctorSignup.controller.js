@@ -6,23 +6,7 @@ import hbs from "nodemailer-express-handlebars";
 import path from "path";
 import pug from "pug";
 
-// const templatePath = path.join(__dirname, "..", "emailTemplates", "doctorWelcome.hbs");
-
-// export const doctorRegistration = async (req, res) => {
-//     const { email, ...otherFields } = req.body;
-
-//     try {
-//       const existingUser = await DoctorSignup.findOne({ email });
-//       if (existingUser) {
-//         return res.status(409).json({ message: 'Email already exists. Please use a different email.' });
-//       }
-
-//       const newUser = await DoctorSignup.create({ email, ...otherFields });
-//       res.status(201).json({ message: 'Signup successful', user: newUser });
-//     } catch (error) {
-//       res.status(500).json({ message: error.message });
-//     }
-//   };
+dotenv.config();
 
 export const doctorRegistration = async (req, res) => {
   const { email, firstName, ...otherFields } = req.body;

@@ -1,5 +1,5 @@
 import express from "express";
-import {bookConsultation, getConsultation, getconsultationId} from "../controllers/consultation.controller.js";
+import {bookConsultation, getConsultation, getconsultationId, getConsultationsByDoctorId, getConsultationsByPatientId} from "../controllers/consultation.controller.js";
 import patientDocsUpload from "../middleware/patientDocsUpload.js";
 
 const router = express.Router();
@@ -13,6 +13,8 @@ router.post('/createConsultation', patientDocsUpload.array('images', 10),
 
 router.get("/", getConsultation);
 router.get("/:id",getconsultationId);
+router.get("/getdoctorId/:doctorId",getConsultationsByDoctorId);
+router.get("/getpatientId/:patientId", getConsultationsByPatientId);
 
 // router.post("/", bookConsultation);
 

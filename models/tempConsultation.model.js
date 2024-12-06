@@ -8,7 +8,7 @@ const TempConsultationSchema = mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, "Please enter your email"],
+      required: [false, "Please enter your email"],
     },
     prefferDate: {
       type: String,
@@ -61,6 +61,11 @@ const TempConsultationSchema = mongoose.Schema(
     paymentSessionId: {
       type: String,
       required: false,
+    },
+    patientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Patient", // Reference to the Patient profile model
+      required: [false, "Patient is required"],
     },
   },
   {
