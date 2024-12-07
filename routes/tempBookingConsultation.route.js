@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTempConsultationBookingSession, createTempConsultation, getConsultationsByDoctorId } from '../controllers/tempBookingConsultation.controller.js';
+import { getTempConsultationBookingSession, createTempConsultation, getConsultationsByDoctorId, getConsultations } from '../controllers/tempBookingConsultation.controller.js';
 import patientDocsUpload from "../middleware/patientDocsUpload.js";
 
 const router = express.Router();
@@ -16,6 +16,7 @@ router.post('/createTempConsultation', patientDocsUpload.array('images', 10),
     next();  // Proceed to the next middleware/controller
   },createTempConsultation);
 router.get("/getdoctorId/:doctorId",getConsultationsByDoctorId);
+router.get("/",getConsultations);
 
 
 export default router;

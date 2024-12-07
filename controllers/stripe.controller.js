@@ -101,10 +101,10 @@ const sendPaymentSuccessEmail = async (email, amount, currency, sessionId, patie
 
     if (email === process.env.ADMIN_EMAIL) {
       // For Admin email, include patient details
-      textContent = `Dear Admin,\n\nA transaction has been successfully completed.\n\nPatient Details:\nName: ${patientName}\nEmail: ${patientEmail}\n\nPayment Details:\nAmount: ${amount} ${currency.toUpperCase()}\nSession ID: ${sessionId}\n\nPlease check the transaction in your Stripe dashboard.\n\nBest Regards,\nTeleconsultation-IoncoSolutions`;
+      textContent = `Dear Admin,\n\nA transaction has been successfully completed.\n\nPatient Details:\nName: ${patientName}\nEmail: ${patientEmail}\n\nPayment Details:\nAmount: ${amount} ${currency}\nSession ID: ${sessionId}\n\nPlease check the transaction in your Stripe dashboard.\n\nBest Regards,\nTeleconsultation-IoncoSolutions`;
     } else {
       // For User email, keep original content
-      textContent = `Dear User,\n\nThank you for your payment of ${amount} ${currency.toUpperCase()}.\nYour session ID is ${sessionId}.\n\nBest Regards,\nTeleconsultation-IoncoSolutions`;
+      textContent = `Dear User,\n\nThank you for your payment of ${amount} ${currency}.\nYour session ID is ${sessionId}.\n\nBest Regards,\nTeleconsultation-IoncoSolutions`;
     }
 
     const mailOptions = {

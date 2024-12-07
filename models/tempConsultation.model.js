@@ -36,7 +36,7 @@ const TempConsultationSchema = mongoose.Schema(
     },
     images: {
       type: [String],
-      required: [true, "Please upload your Docs"],
+      required: [false, "Please upload your Docs"],
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,

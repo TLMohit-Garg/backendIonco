@@ -35,7 +35,7 @@ const ConsultationSchema = mongoose.Schema(
       type: String,
       required: ["Provide some description if you want to..."],
     },
-    images:{ type: [String], required: [true, "Please upload your Docs"] },
+    images:{ type: [String], required: [false, "Please upload your Docs"] },
     doctorId: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: "Doctor",  // This will reference the Doctor profile model
@@ -55,6 +55,10 @@ const ConsultationSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patient", // Reference to the Patient profile model
       required: [false, "Patient is required"],
+    },
+    paymentSessionId: {
+      type: String,
+      required: false,
     },
   },
   

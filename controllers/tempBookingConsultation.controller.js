@@ -11,7 +11,7 @@ import mongoose from "mongoose";
 
 
 // Multer setup for parsing form-data
-const upload = multer({ dest: "patientDocsUpload/" });
+const upload = multer({ dest: "patientDocsUploads/" });
 dotenv.config();
 
 const stripe = new Stripe(process.env.STRIPE_KEY);
@@ -25,16 +25,32 @@ export const getTempConsultationBookingSession = async (req, res) => {
   const { sessionId } = req.params;
 
   try {
+    console.log("Session ID received:", sessionId);
     // Fetch session details directly from Stripe using the sessionId
     const sessionData = await stripe.checkout.sessions.retrieve(sessionId);
     // const sessionData = stripeResponse.data;
+    // console.log("Session ID received after the logic", sessionData);
+
+    // const allTempBookings = await TempConsultation.findOne({paymentSessionId });
+    // console.log("All paymentSessionId records:", allTempBookings);
 
     // Fetch the temporary booking from the TempConsultation collection
-    const tempBooking = await TempConsultation.findOne({
-      paymentSessionId: sessionId,
-    });
-    console.log("find the paymentSessionId in TempConsultation schema",tempBooking);
+    const tempBooking = await Consultation.findOne({
+      paymentSessionId : sessionId,
+      // email: "RajaRam87@gmail.com"
+    });  
 
+    if (tempBooking) {
+      console.log("Exist tempBooking----:", tempBooking);
+    } else {
+      console.log("Not exist in db:-----");
+    }
+
+    console.log("find the paymentSessionId in TempConsultation schema",tempBooking);
+    // console.log("Session ID received:", sessionId);
+    console.log("Stored paymentSessionId in DB:", tempBooking?.paymentSessionId);
+
+    
     if (!tempBooking) {
       return res.status(404).json({ message: "Temporary booking not found" });
     }
@@ -53,12 +69,13 @@ export const getTempConsultationBookingSession = async (req, res) => {
         images: tempBooking.images,
         doctorId: tempBooking.doctorId,
         patientId: tempBooking.patientId,
+        paymentSessionId: tempBooking.paymentSessionId,
       });
 
       await finalBooking.save();
 
       // Optionally, delete the temporary booking
-      await TempConsultation.deleteOne({ _id: tempBooking._id });
+      // await TempConsultation.deleteOne({ _id: tempBooking._id });
 
       // Send email notifications
       const transporter = nodemailer.createTransport({
@@ -213,9 +230,10 @@ export const createTempConsultation = async (req, res) => {
       cloudinary.uploader.upload(file.path, { folder: 'patientDocuments' })
     );
     const uploadResults = await Promise.all(uploadPromises);
-
+    console.log("uploadResults files(docs uploaded by patient",uploadResults)
     // Extract secure URLs from Cloudinary response
     const fileUrls = uploadResults.map((result) => result.secure_url);
+    console.log("uploadResults files(docs uploaded by patientin map way)",fileUrls)
 
     // Format the preferred date
     let formattedPrefferDate = prefferDate;
@@ -246,6 +264,7 @@ export const createTempConsultation = async (req, res) => {
       images: fileUrls,
       doctorId,
       patientId,
+      paymentSessionId,
       paymentStatus: "pending", // Default to pending
     });
 
@@ -320,5 +339,15 @@ export const getConsultationsByDoctorId = async (req, res) => {
   } catch (error) {
     console.error("Error fetching consultations:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+//Get all the temporary consultattion
+export const getConsultations = async(req, res) => {
+  try{
+     const consultattion = await TempConsultation.find({});
+     res.status(200).json(consultattion);
+  }catch(error){
+  res.status(500).json({message: error.message});
   }
 };
