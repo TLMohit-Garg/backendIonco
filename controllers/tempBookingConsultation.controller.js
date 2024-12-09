@@ -9,7 +9,6 @@ import path from "path";
 import pug from "pug";
 import mongoose from "mongoose";
 
-
 // Multer setup for parsing form-data
 const upload = multer({ dest: "patientDocsUploads/" });
 dotenv.config();
@@ -35,10 +34,10 @@ export const getTempConsultationBookingSession = async (req, res) => {
     // console.log("All paymentSessionId records:", allTempBookings);
 
     // Fetch the temporary booking from the TempConsultation collection
-    const tempBooking = await Consultation.findOne({
-      paymentSessionId : sessionId,
+    const tempBooking = await TempConsultation.findOne({
+      paymentSessionId: sessionId,
       // email: "RajaRam87@gmail.com"
-    });  
+    });
 
     if (tempBooking) {
       console.log("Exist tempBooking----:", tempBooking);
@@ -46,17 +45,40 @@ export const getTempConsultationBookingSession = async (req, res) => {
       console.log("Not exist in db:-----");
     }
 
-    console.log("find the paymentSessionId in TempConsultation schema",tempBooking);
+    console.log(
+      "find the paymentSessionId in TempConsultation schema",
+      tempBooking
+    );
     // console.log("Session ID received:", sessionId);
-    console.log("Stored paymentSessionId in DB:", tempBooking?.paymentSessionId);
+    console.log(
+      "Stored paymentSessionId in DB:",
+      tempBooking?.paymentSessionId
+    );
 
-    
     if (!tempBooking) {
       return res.status(404).json({ message: "Temporary booking not found" });
     }
 
     // Check payment status and handle accordingly
     if (sessionData.payment_status === "paid") {
+      // Send payment success emails
+      await sendPaymentSuccessEmail(
+        tempBooking.email,
+        sessionData.amount_total,
+        sessionData.currency,
+        sessionData.id,
+        tempBooking.fullName,
+        tempBooking.email
+      );
+
+      await sendPaymentSuccessEmail(
+        process.env.ADMIN_EMAIL,
+        sessionData.amount_total,
+        sessionData.currency,
+        sessionData.id,
+        tempBooking.fullName,
+        tempBooking.email
+      );
       const finalBooking = new Consultation({
         fullName: tempBooking.fullName,
         email: tempBooking.email,
@@ -101,7 +123,9 @@ export const getTempConsultationBookingSession = async (req, res) => {
       );
 
       // Populate doctor details
-      const populatedBooking = await Consultation.findById(finalBooking._id).populate({
+      const populatedBooking = await Consultation.findById(
+        finalBooking._id
+      ).populate({
         path: "doctorId",
         populate: { path: "userId" },
       });
@@ -189,51 +213,53 @@ export const getTempConsultationBookingSession = async (req, res) => {
 
 // Post request controller
 export const createTempConsultation = async (req, res) => {
-  
-    const {
-      fullName,
-      email,
-      prefferDate,
-      nationality,
-      timezone,
-      // cancertype,
-      phone,
-      description,
-      doctorId,
-      patientId,
-      doctorName,
-      doctorPrice,
-      preferredCurrency,
-    } = req.body;
+  const {
+    fullName,
+    email,
+    prefferDate,
+    nationality,
+    timezone,
+    // cancertype,
+    phone,
+    description,
+    doctorId,
+    patientId,
+    doctorName,
+    doctorPrice,
+    preferredCurrency,
+  } = req.body;
 
-    // Validate essential fields
-    // if (
-    //   !email ||
-    //   !doctorId ||
-    //   !doctorPrice ||
-    //   !doctorName ||
-    //   !preferredCurrency
-    // ) {
-    //   return res.status(400).json({
-    //     message:
-    //       "Missing required fields. Please provide email, doctorId, doctorPrice, doctorName, and preferredCurrency.",
-    //   });
-    // }
+  // Validate essential fields
+  // if (
+  //   !email ||
+  //   !doctorId ||
+  //   !doctorPrice ||
+  //   !doctorName ||
+  //   !preferredCurrency
+  // ) {
+  //   return res.status(400).json({
+  //     message:
+  //       "Missing required fields. Please provide email, doctorId, doctorPrice, doctorName, and preferredCurrency.",
+  //   });
+  // }
 
-    // Extract images if available (assuming multer handles them)
-    // const images = req.files
-    //   ? req.files.map((file) => file.path)
-    //   : req.body.images || [];
-    try {
-        // Upload all files to Cloudinary
+  // Extract images if available (assuming multer handles them)
+  // const images = req.files
+  //   ? req.files.map((file) => file.path)
+  //   : req.body.images || [];
+  try {
+    // Upload all files to Cloudinary
     const uploadPromises = req.files.map((file) =>
-      cloudinary.uploader.upload(file.path, { folder: 'patientDocuments' })
+      cloudinary.uploader.upload(file.path, { folder: "patientDocuments" })
     );
     const uploadResults = await Promise.all(uploadPromises);
-    console.log("uploadResults files(docs uploaded by patient",uploadResults)
+    console.log("uploadResults files(docs uploaded by patient", uploadResults);
     // Extract secure URLs from Cloudinary response
     const fileUrls = uploadResults.map((result) => result.secure_url);
-    console.log("uploadResults files(docs uploaded by patientin map way)",fileUrls)
+    console.log(
+      "uploadResults files(docs uploaded by patientin map way)",
+      fileUrls
+    );
 
     // Format the preferred date
     let formattedPrefferDate = prefferDate;
@@ -264,7 +290,7 @@ export const createTempConsultation = async (req, res) => {
       images: fileUrls,
       doctorId,
       patientId,
-      paymentSessionId,
+      // paymentSessionId,
       paymentStatus: "pending", // Default to pending
     });
 
@@ -277,7 +303,7 @@ export const createTempConsultation = async (req, res) => {
         {
           price_data: {
             // currency: preferredCurrency ? preferredCurrency.toLowerCase(): 'inr',
-            currency: (preferredCurrency || 'inr').toLowerCase(),
+            currency: (preferredCurrency || "inr").toLowerCase(),
             product_data: {
               name: `Consultation with Dr. ${doctorName}`,
               description: `15% Service charges included.`,
@@ -301,6 +327,8 @@ export const createTempConsultation = async (req, res) => {
     savedConsultation.paymentSessionId = session.id;
     await savedConsultation.save();
 
+    console.log("Stripe Session URL after the payment:", session.url);
+    console.log("Stripe Session ID after the payment:", session.id);
     // Respond with the Stripe session URL
     res.status(200).send({ url: session.url, sessionId: session.id });
   } catch (error) {
@@ -311,7 +339,7 @@ export const createTempConsultation = async (req, res) => {
   }
 };
 
-//Get request consultation with doctorId 
+//Get request consultation with doctorId
 export const getConsultationsByDoctorId = async (req, res) => {
   const { doctorId } = req.params;
 
@@ -323,16 +351,17 @@ export const getConsultationsByDoctorId = async (req, res) => {
   console.log("Doctor ID from params:", doctorId);
   try {
     // Query consultations based on doctorId
-    const consultations = await TempConsultation
-      .find({ doctorId })
+    const consultations = await TempConsultation.find({ doctorId })
       .populate("doctorId", "name price") // Adjust based on fields in Doctor schema
       .sort({ createdAt: -1 }); // Sort by latest first
 
-      console.log("Consultations fetched:", consultations);
+    console.log("Consultations fetched:", consultations);
 
     // Handle if no consultations found
     if (!consultations.length) {
-      return res.status(200).json({ message: "No consultations found for this doctor." });
+      return res
+        .status(200)
+        .json({ message: "No consultations found for this doctor." });
     }
 
     res.status(200).json(consultations);
@@ -343,11 +372,56 @@ export const getConsultationsByDoctorId = async (req, res) => {
 };
 
 //Get all the temporary consultattion
-export const getConsultations = async(req, res) => {
-  try{
-     const consultattion = await TempConsultation.find({});
-     res.status(200).json(consultattion);
-  }catch(error){
-  res.status(500).json({message: error.message});
+export const getConsultations = async (req, res) => {
+  try {
+    const consultattion = await TempConsultation.find({});
+    res.status(200).json(consultattion);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Utility function for sending payment success emails
+const sendPaymentSuccessEmail = async (
+  recipientEmail,
+  amount,
+  currency,
+  sessionId,
+  patientName,
+  patientEmail
+) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const paymentSuccessTemplatePath = path.resolve(
+    "emailTemplates",
+    "paymentSuccess.pug"
+  );
+
+  const emailHtml = pug.renderFile(paymentSuccessTemplatePath, {
+    amount: (amount / 100).toFixed(2), // Convert to readable format
+    currency,
+    sessionId,
+    patientName,
+    patientEmail,
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: recipientEmail,
+    subject: "Payment Successful - Your Booking",
+    html: emailHtml,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Payment success email sent to ${recipientEmail}`);
+  } catch (error) {
+    console.error("Error sending payment success email:", error);
   }
 };
