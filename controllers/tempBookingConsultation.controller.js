@@ -132,8 +132,10 @@ export const getTempConsultationBookingSession = async (req, res) => {
 
       const doctorEmail = populatedBooking?.doctorId?.userId?.email;
       const doctorName = populatedBooking?.doctorId?.userId?.firstName;
+      const doctorId = populatedBooking?.doctorId?.userId?._id;
       console.log("doctor email--", doctorEmail);
       console.log("doctor name:--", doctorName);
+      console.log(" doctorId:--", doctorId);
 
       // Render Pug templates
       const patientMailHtml = pug.renderFile(patientTemplatePath, {
@@ -153,7 +155,11 @@ export const getTempConsultationBookingSession = async (req, res) => {
 
       const adminMailHtml = pug.renderFile(adminTemplatePath, {
         patientName: tempBooking.fullName,
+        patientEmail: tempBooking.email,
+        patientId: tempBooking.patientId,
         doctorName,
+        doctorEmail,
+        doctorId: populatedBooking?.doctorId?.userId?._id,
         prefferDate: tempBooking.prefferDate,
         details: JSON.stringify(
           {
@@ -296,6 +302,14 @@ export const createTempConsultation = async (req, res) => {
 
     const savedConsultation = await tempConsultation.save();
 
+    // Ensure doctorPrice is a number
+  const numericDoctorPrice = parseFloat(doctorPrice);
+  if (isNaN(numericDoctorPrice)) {
+    throw new Error("Invalid doctorPrice: must be a number.");
+  }
+    // Calculate the adjusted price with a 15% service charge
+      const serviceChargePercentage = 0.15;
+      const adjustedPrice = numericDoctorPrice + numericDoctorPrice * serviceChargePercentage;
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       customer_email: email,
@@ -308,7 +322,7 @@ export const createTempConsultation = async (req, res) => {
               name: `Consultation with Dr. ${doctorName}`,
               description: `15% Service charges included.`,
             },
-            unit_amount: Math.round(doctorPrice * 100), // Stripe requires price in cents
+            unit_amount: Math.round(adjustedPrice * 100), // Stripe requires price in cents
           },
           quantity: 1,
         },
@@ -320,6 +334,9 @@ export const createTempConsultation = async (req, res) => {
         consultation_id: savedConsultation._id.toString(), // Store consultation ID for reference
         fullName,
         email,
+        originalPrice: numericDoctorPrice.toFixed(2), // Original doctor price before service charges
+        serviceCharge: (numericDoctorPrice * serviceChargePercentage).toFixed(2), // Amount added as a service charge
+        totalPrice: adjustedPrice.toFixed(2), // Final price after adding service charges
       },
     });
 
