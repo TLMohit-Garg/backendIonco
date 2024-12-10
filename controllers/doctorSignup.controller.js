@@ -78,13 +78,22 @@ export const doctorRegistration = async (req, res) => {
     };
 
     // Send emails
-    try {
-    await transporter.sendMail(doctorMailOptions);
-    await transporter.sendMail(adminMailOptions);
-    }catch (emailError) {
-      console.error("Email sending failed:", emailError.message);
-      // Log the error but do not fail the signup process
-    }
+    // try {
+    // await transporter.sendMail(doctorMailOptions);
+    // await transporter.sendMail(adminMailOptions);
+    // }catch (emailError) {
+    //   console.error("Email sending failed:", emailError.message);
+    //   // Log the error but do not fail the signup process
+    // }
+
+    // Send emails
+    await transporter.sendMail(doctorMailOptions).catch((emailError) => {
+      console.error("Doctor email sending failed:", emailError.message);
+    });
+    await transporter.sendMail(adminMailOptions).catch((emailError) => {
+      console.error("Admin email sending failed:", emailError.message);
+    });
+    
     res.status(201).json({ message: "Signup successful", user: newUser });
     console.log("user Signup successful", user);
   } catch (error) {
